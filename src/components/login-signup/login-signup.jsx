@@ -1,31 +1,36 @@
 import React, { useState } from 'react';
-import './login.css';
+import './login-signup.css';
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [businessName, setBusinessName] = useState('');
+    const [isSignUp, setIsSignUp] = useState(false); // State to toggle between login and signup
     const [error, setError] = useState('');
 
-    const handleSubmitLogin = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        const url = isSignUp ? `${import.meta.env.VITE_BACKEND_ADDRESS}/auth/signup` : `${import.meta.env.VITE_BACKEND_ADDRESS}/auth/login`;
+        const body = isSignUp ? JSON.stringify({ email, password, businessName }) : JSON.stringify({ email, password });
+
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/auth/login`, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password })
+                body: body
             });
 
             const data = await response.json();
             if (response.ok) {
                 localStorage.setItem('token', data.token);
-                // Redirect or update state to indicate login success
+                // Redirect or update state to indicate success
             } else {
                 setError(data.message);
             }
         } catch (error) {
-            setError('Login failed. Please try again.');
+            setError('Operation failed. Please try again.');
         }
     };
 
@@ -50,13 +55,15 @@ function Login() {
             <h1>Uni Biz</h1>
             <div className="form">
               <div className="tab">
-                <button className="active">Log In</button>
-                <button>Sign Up</button>
+                <button className={!isSignUp ? "active" : ""} onClick={() => setIsSignUp(false)}>Log In</button>
+                <button className={isSignUp ? "active" : ""} onClick={() => setIsSignUp(true)}>Sign Up</button>
               </div>
-              <form>
-                <input type="text" placeholder="username" />
-                <input type="password" placeholder="password" />
-                <button type="submit">Log In</button>
+              <form onSubmit={handleSubmit}>
+                {isSignUp && <input type="text" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />}
+                {isSignUp && <input type="text" placeholder="Business Name" value={businessName} onChange={e => setBusinessName(e.target.value)} />}
+                <input type="text" placeholder="username" value={email} onChange={e => setEmail(e.target.value)} />
+                <input type="password" placeholder="password" value={password} onChange={e => setPassword(e.target.value)} />
+                <button type="submit">{isSignUp ? "Sign Up" : "Log In"}</button>
               </form>
             </div>
           </div>
