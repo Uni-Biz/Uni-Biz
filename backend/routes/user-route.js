@@ -10,8 +10,8 @@ const authenticateJWT  = require("../middlewares/authenticateJWT");
 
 router.post("/signup", async (req, res) => {
     const { username, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
         const user = await prisma.user.create({
             data: {
                 username,
@@ -74,47 +74,5 @@ router.get("/info", authenticateJWT, async (req, res) => {
     return res.json(userInfo);
 });
 
-
-
-router.get('/callback', async (req, res) => {
-    const code = req.query.code || null;
-    const authOptions = {
-        url: 'https://accounts.spotify.com/api/token',
-        method: 'POST',
-        body: querystring.stringify({
-            code: code,
-            redirect_uri: REDIRECT_URI,
-            grant_type: 'authorization_code',
-        }),
-        headers: {
-            'Authorization': 'Basic ' + Buffer.from(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64'),
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    };
-
-    try {
-        const response = await fetch(authOptions.url, {
-            method: authOptions.method,
-            body: authOptions.body,
-            headers: authOptions.headers
-        });
-        const data = await response.json();
-        const accessToken = data.access_token;
-        const refreshToken = data.refresh_token;
-
-        // Save tokens in database for the user
-        const user = await prisma.user.update({
-            where: { email: req.user.email },
-            data: { spotifyAccessToken: accessToken, spotifyRefreshToken: refreshToken },
-        });
-
-        const token = jwt.sign({ id: user.id, username: user.username}, process.env.JWT_SECRET, { expiresIn: '1h'});
-        res.cookie('jwt', token, {httpOnly: true, secure: true});
-        res.redirect(`/dashboard`);
-    } catch (error) {
-        console.error(error);
-        res.redirect(`/error`);
-    }
-});
 
 module.exports = router;
