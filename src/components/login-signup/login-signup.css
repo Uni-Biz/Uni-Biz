@@ -91,6 +91,20 @@ form input {
     border-radius: 5px;
 }
 
+.name-fields {
+    display: flex;
+    justify-content: space-between;
+}
+
+.name-field {
+    flex: 1;
+    margin-right: 0px;
+}
+
+.name-field:last-child {
+    margin-left:0px;
+}
+
 form button {
     padding: 10px;
     font-size: 16px;
