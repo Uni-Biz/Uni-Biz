@@ -1,6 +1,5 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
-
 function authenticateJWT(req, res, next) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
@@ -14,7 +13,7 @@ function authenticateJWT(req, res, next) {
         req.user = decoded;
         next();
     } catch (error) {
-        return res.status(403).json({ error: 'Bad token' });
+        return res.status(401).json({ error: 'Bad token' });
     }
 }
 

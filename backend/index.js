@@ -1,18 +1,13 @@
-const express = require('express')
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const userRoutes = require("./routes/userRoutes");
-require('dotenv').config()
-const app = express()
+const express = require("express");
+const bodyParser = require("body-parser");
+const userRoutes = require("./routes/user-route"); // Corrected path
 
-app.use(bodyParser.json())
-app.use(cors());
-app.use(express.json());
+const app = express();
+const port = 3000;
 
+app.use(bodyParser.json());
 app.use("/user", userRoutes);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });

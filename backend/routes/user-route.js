@@ -9,19 +9,29 @@ const querystring = require('querystring');
 const authenticateJWT  = require("../middlewares/authenticateJWT");
 
 router.post("/signup", async (req, res) => {
-    const { username, email, password } = req.body;
+    const { first_name, last_name, email, username, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     try {
         const user = await prisma.user.create({
             data: {
+                first_name,
+                last_name,
                 username,
                 email,
                 password: hashedPassword,
             },
         });
+        if (user !== null) {
+            return res.status(400).json({ error: 'Username already taken' });
+        }
 
-        res.status(201).json({ user });
+        res.status(201).json("User Signed Up", { user });
+
     } catch (error) {
+        console.error("Error creating user:", error);
+        if (error.code === 'P2002' && error.meta.target.includes('username')) {
+            return res.status(400).json({ error: 'Username already taken' });
+        }
         res.status(500).json({ error: 'User could not be created.' });
     }
 });
@@ -31,7 +41,7 @@ router.post("/login", async (req, res) => {
     try {
         const user = await prisma.user.findUnique({ where: { username } });
         if (user === null) {
-            return res.status(403).json({ "status": "bad username/password" });
+            return res.status(401).json({ "status": "Invalid credentials" });
         }
         const match = await bcrypt.compare(password, user.password);
 
@@ -39,7 +49,7 @@ router.post("/login", async (req, res) => {
             const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
             return res.status(201).json({ "status": "logged in", "token": token });
         } else {
-            return res.status(403).json({ "status": "bad username/password" });
+            return res.status(401).json({ "status": "Invalid credentials" });
         }
     } catch (error) {
         console.error(error);
