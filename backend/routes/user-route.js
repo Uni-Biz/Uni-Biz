@@ -21,18 +21,10 @@ router.post("/signup", async (req, res) => {
                 password: hashedPassword,
             },
         });
-        if (user !== null) {
-            return res.status(400).json({ error: 'Username already taken' });
-        }
-
-        res.status(201).json("User Signed Up", { user });
+        res.status(201).json({ message: "User Signed Up", user });
 
     } catch (error) {
         console.error("Error creating user:", error);
-        if (error.code === 'P2002' && error.meta.target.includes('username')) {
-            return res.status(400).json({ error: 'Username already taken' });
-        }
-        res.status(500).json({ error: 'User could not be created.' });
     }
 });
 
