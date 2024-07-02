@@ -24,8 +24,9 @@ function LoginSignup() {
             setError('Please use a valid college email address');
             return;
         }
-
+        console.log("Form submitted");
         try {
+            console.log("trying to fetch")
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -47,6 +48,7 @@ function LoginSignup() {
             }
         } catch (error) {
             setError('Operation failed. Please try again.');
+            console.log(error);
         }
     };
 

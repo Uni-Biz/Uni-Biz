@@ -10,9 +10,19 @@ const authenticateJWT  = require("../middlewares/authenticateJWT");
 
 router.post("/signup", async (req, res) => {
     const { first_name, last_name, email, username, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+
     try {
-        const user = await prisma.user.create({
+        // Check if username already exists
+        const existingUser = await prisma.user.findFirst({ where: { username } });
+
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already exists' });
+        }
+
+        // If username doesn't exist, proceed with user creation
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = await prisma.user.create({
             data: {
                 first_name,
                 last_name,
@@ -21,12 +31,15 @@ router.post("/signup", async (req, res) => {
                 password: hashedPassword,
             },
         });
-        res.status(201).json({ message: "User Signed Up", user });
+
+        res.status(201).json({ message: "User Signed Up", user: newUser });
 
     } catch (error) {
         console.error("Error creating user:", error);
+        res.status(500).json({ error: 'User could not be created.' });
     }
 });
+
 
 router.post("/login", async (req, res) => {
     const { username, password } = req.body;
