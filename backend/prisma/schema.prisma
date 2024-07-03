@@ -21,3 +21,28 @@ model User{
   username String @unique
   password String
 }
+
+model BusinessProfile{
+  id           Int    @id @default(autoincrement())
+  businessName String
+  logo         String?
+  userId       Int
+  user         User   @relation(fields: [userId], references: [id])
+}
+
+model Services {
+  id              Int                  @id @default(autoincrement())
+  serviceType     String
+  pricing         Json
+  reviewsAndRatings Reviews_and_Ratings[]
+}
+
+model Reviews_and_Ratings {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  serviceId   Int
+  rating      Int
+  reviewText  String?
+  user        User     @relation(fields: [userId], references: [id])
+  service     Services @relation(fields: [serviceId], references: [id])
+}

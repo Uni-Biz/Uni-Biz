@@ -9,6 +9,7 @@ function LoginSignup() {
     const [password, setPassword] = useState('');
     const [isSignUp, setIsSignUp] = useState(false);
     const [error, setError] = useState('');
+    const [redirect, setRedirect] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -42,7 +43,7 @@ function LoginSignup() {
             if (response.ok) {
                 localStorage.setItem('token', data.token);
                 setError('User Signed Up');
-                // Redirect or update state to indicate success
+                setIsSignUp(false);
             } else {
                 setError(data.error || 'Unknown error occurred');
             }
@@ -51,6 +52,8 @@ function LoginSignup() {
             console.log(error);
         }
     };
+
+
 
     return (
         <div className="container">
