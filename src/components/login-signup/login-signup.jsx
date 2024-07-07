@@ -1,19 +1,34 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './login-signup.css';
 
-function Login() {
+function LoginSignup() {
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
+    const [username, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [businessName, setBusinessName] = useState('');
-    const [isSignUp, setIsSignUp] = useState(false); // State to toggle between login and signup
+    const [isSignUp, setIsSignUp] = useState(false);
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = isSignUp ? `${import.meta.env.VITE_BACKEND_ADDRESS}/auth/signup` : `${import.meta.env.VITE_BACKEND_ADDRESS}/auth/login`;
-        const body = isSignUp ? JSON.stringify({ email, password, businessName }) : JSON.stringify({ email, password });
+        const url = isSignUp ? `${import.meta.env.VITE_BACKEND_ADDRESS}/user/signup` : `${import.meta.env.VITE_BACKEND_ADDRESS}/user/login`;
+        const body = isSignUp ? JSON.stringify({ first_name: firstName, last_name: lastName, email, username, password }) : JSON.stringify({ username, password });
 
+        if (!username || !password || (isSignUp && (!firstName || !lastName || !email))) {
+            setError('Please fill in all fields');
+            return;
+        }
+
+        if (isSignUp && !email.endsWith('.edu')) {
+            setError('Please use a valid college email address');
+            return;
+        }
+        console.log("Form submitted");
         try {
+            console.log("trying to fetch from", url)
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -21,54 +36,98 @@ function Login() {
                 },
                 body: body
             });
+            console.log("Response:", response);
 
             const data = await response.json();
+            console.log("Data:", data);
+
             if (response.ok) {
                 localStorage.setItem('token', data.token);
-                // Redirect or update state to indicate success
+                console.log(`Redirecting to ${data.redirect}`);
+                navigate(data.redirect);
+                setError('User Signed Up');
+                setIsSignUp(false);
             } else {
-                setError(data.message);
+                setError(data.error || 'Unknown error occurred');
             }
         } catch (error) {
             setError('Operation failed. Please try again.');
+            console.log(error);
         }
     };
 
+
+
     return (
         <div className="container">
-          <div className="left-panel">
-            <h1>Get Started With <span className="uni-biz">Uni Biz</span></h1>
-            <div className="feature">
-              <p><strong>Convenient Campus Services:</strong> Find and book services and goods, from haircuts to home-cooked meals from fellow students on campus.</p>
+            <div className="left-panel">
+                <h1>Get Started With <span className="uni-biz">Uni Biz</span></h1>
+                <div className="feature">
+                    <p><strong>Convenient Campus Services:</strong> Find and book services and goods, from haircuts to home-cooked meals from fellow students on campus.</p>
+                </div>
+                <div className="feature">
+                    <p><strong>Support Student Businesses:</strong> Help your campus community by supporting student entrepreneurs.</p>
+                </div>
+                <div className="feature">
+                    <p><strong>Trusted Reviews:</strong> Rely on verified reviews from other students for quality services.</p>
+                </div>
+                <div className="feature">
+                    <p><strong>Seamless Connections:</strong> Sign up, browse listings, and message businesses easily with your campus credentials.</p>
+                </div>
             </div>
-            <div className="feature">
-              <p><strong>Support Student Businesses:</strong> Help your campus community by supporting student entrepreneurs.</p>
+            <div className="right-panel">
+                <h1>Uni Biz</h1>
+                <div className="form">
+                    <div className="tab">
+                        <button className={!isSignUp ? "active" : ""} onClick={() => setIsSignUp(false)}>Log In</button>
+                        <button className={isSignUp ? "active" : ""} onClick={() => setIsSignUp(true)}>Sign Up</button>
+                    </div>
+                    {error && <p className="error">{error}</p>}
+                    <form onSubmit={handleSubmit}>
+                        {isSignUp && (
+                            <div className="name-fields">
+                                <input
+                                    type="text"
+                                    placeholder="First Name"
+                                    value={firstName}
+                                    onChange={e => setFirstName(e.target.value)}
+                                    className="name-field"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Last Name"
+                                    value={lastName}
+                                    onChange={e => setLastName(e.target.value)}
+                                    className="name-field"
+                                />
+                            </div>
+                        )}
+                        {isSignUp && (
+                            <input
+                                type="text"
+                                placeholder="Email"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                            />
+                        )}
+                        <input
+                            type="text"
+                            placeholder="Username"
+                            value={username}
+                            onChange={e => setUserName(e.target.value)}
+                        />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                        />
+                        <button type="submit">{isSignUp ? "Sign Up" : "Log In"}</button>
+                    </form>
+                </div>
             </div>
-            <div className="feature">
-              <p><strong>Trusted Reviews:</strong> Rely on verified reviews from other students for quality services.</p>
-            </div>
-            <div className="feature">
-              <p><strong>Seamless Connections:</strong> Sign up, browse listings, and message businesses easily with your campus credentials.</p>
-            </div>
-          </div>
-          <div className="right-panel">
-            <h1>Uni Biz</h1>
-            <div className="form">
-              <div className="tab">
-                <button className={!isSignUp ? "active" : ""} onClick={() => setIsSignUp(false)}>Log In</button>
-                <button className={isSignUp ? "active" : ""} onClick={() => setIsSignUp(true)}>Sign Up</button>
-              </div>
-              <form onSubmit={handleSubmit}>
-                {isSignUp && <input type="text" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />}
-                {isSignUp && <input type="text" placeholder="Business Name" value={businessName} onChange={e => setBusinessName(e.target.value)} />}
-                <input type="text" placeholder="username" value={email} onChange={e => setEmail(e.target.value)} />
-                <input type="password" placeholder="password" value={password} onChange={e => setPassword(e.target.value)} />
-                <button type="submit">{isSignUp ? "Sign Up" : "Log In"}</button>
-              </form>
-            </div>
-          </div>
         </div>
-      );
+    );
 }
 
-export default Login;
+export default LoginSignup;

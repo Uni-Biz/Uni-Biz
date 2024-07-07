@@ -12,3 +12,41 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id          Int                 @id @default(autoincrement())
+  first_name  String
+  last_name   String
+  email       String
+  username    String              @unique
+  password    String
+  profileComplete   Boolean  @default(false)
+  profile     BusinessProfile?
+  reviews     ReviewAndRating[]   @relation("UserReviews")
+}
+
+model BusinessProfile {
+  id           Int                @id @default(autoincrement())
+  businessName String
+  logo         String?
+  bio          String
+  userId       Int                @unique
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Service {
+  id                Int               @id @default(autoincrement())
+  serviceType       String
+  pricing           Json
+  reviewsAndRatings ReviewAndRating[] @relation("ServiceReviews")
+}
+
+model ReviewAndRating {
+  id         Int                  @id @default(autoincrement())
+  userId     Int
+  serviceId  Int
+  rating     Int
+  reviewText String?
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserReviews")
+  service    Service              @relation(fields: [serviceId], references: [id], onDelete: Cascade, name: "ServiceReviews")
+}
