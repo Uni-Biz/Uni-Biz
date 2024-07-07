@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import './profile.css'; // Make sure the path matches your CSS file
+import { useNavigate } from 'react-router-dom';
+import './profile.css';
 
 function Profile() {
     const [logo, setLogo] = useState(null);
     const [businessName, setBusinessName] = useState('');
-    const [description, setDescription] = useState('');
+    const [bio, setBio] = useState('');
     const [error, setError] = useState('');
 
     const handleLogoChange = (event) => {
@@ -14,7 +15,7 @@ function Profile() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!logo || !businessName || !description) {
+        if (!logo || !businessName || !bio) {
             setError('Please fill in all fields');
             return;
         }
@@ -22,19 +23,23 @@ function Profile() {
         const formData = new FormData();
         formData.append('logo', logo);
         formData.append('businessName', businessName);
-        formData.append('description', description);
+        formData.append('bio', bio);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/user/profile`, {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/create-profile`, {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
                 body: formData,
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                // Handle success
-                console.log('Profile created:', data);
+
+                history.push('/dashboard');
             } else {
                 setError(data.error || 'Unknown error occurred');
             }
@@ -64,11 +69,11 @@ function Profile() {
                         />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="description">Description:</label>
+                        <label htmlFor="bio">Description:</label>
                         <textarea
-                            id="description"
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
+                            id="bio"
+                            value={bio}
+                            onChange={e => setBio(e.target.value)}
                         />
                     </div>
                     <button type="submit">Create Profile</button>
@@ -78,4 +83,4 @@ function Profile() {
     );
 }
 
-export default  Profile;
+export default Profile;

@@ -40,7 +40,6 @@ router.post("/signup", async (req, res) => {
     }
 });
 
-
 router.post("/login", async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -52,7 +51,12 @@ router.post("/login", async (req, res) => {
 
         if (match) {
             const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            return res.status(201).json({ "status": "logged in", "token": token });
+            const isProfileComplete = user.profileComplete;
+            const redirect = '/dashboard'
+            res.json({
+                token: token,
+                redirect: isProfileComplete ? '/dashboard' : '/create-profile'
+            });
         } else {
             return res.status(401).json({ "status": "Invalid credentials" });
         }
@@ -89,5 +93,23 @@ router.get("/info", authenticateJWT, async (req, res) => {
     return res.json(userInfo);
 });
 
+router.post('/create-profile', authenticateJWT, async (req, res) => {
+    const { bussinessName, logo, bio } = req.body;
+
+    try {
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: {
+                bussinessName,
+                logo,
+                bio,
+                profileComplete: true  // Mark profile as complete
+            }
+        });
+        res.send('Profile created successfully');
+    } catch (error) {
+        res.status(500).send('Error creating profile');
+    }
+});
 
 module.exports = router;

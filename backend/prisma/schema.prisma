@@ -13,36 +13,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id Int @id @default(autoincrement())
-  first_name String
-  last_name String
-  email String
-  username String @unique
-  password String
+model User {
+  id          Int                 @id @default(autoincrement())
+  first_name  String
+  last_name   String
+  email       String
+  username    String              @unique
+  password    String
+  profileComplete   Boolean  @default(false)
+  profile     BusinessProfile?
+  reviews     ReviewAndRating[]   @relation("UserReviews")
 }
 
-model BusinessProfile{
-  id           Int    @id @default(autoincrement())
+model BusinessProfile {
+  id           Int                @id @default(autoincrement())
   businessName String
   logo         String?
-  userId       Int
-  user         User   @relation(fields: [userId], references: [id])
+  bio          String
+  userId       Int                @unique
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Services {
-  id              Int                  @id @default(autoincrement())
-  serviceType     String
-  pricing         Json
-  reviewsAndRatings Reviews_and_Ratings[]
+model Service {
+  id                Int               @id @default(autoincrement())
+  serviceType       String
+  pricing           Json
+  reviewsAndRatings ReviewAndRating[] @relation("ServiceReviews")
 }
 
-model Reviews_and_Ratings {
-  id          Int      @id @default(autoincrement())
-  userId      Int
-  serviceId   Int
-  rating      Int
-  reviewText  String?
-  user        User     @relation(fields: [userId], references: [id])
-  service     Services @relation(fields: [serviceId], references: [id])
+model ReviewAndRating {
+  id         Int                  @id @default(autoincrement())
+  userId     Int
+  serviceId  Int
+  rating     Int
+  reviewText String?
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserReviews")
+  service    Service              @relation(fields: [serviceId], references: [id], onDelete: Cascade, name: "ServiceReviews")
 }

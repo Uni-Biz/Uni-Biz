@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './login-signup.css';
 
 function LoginSignup() {
@@ -9,7 +10,7 @@ function LoginSignup() {
     const [password, setPassword] = useState('');
     const [isSignUp, setIsSignUp] = useState(false);
     const [error, setError] = useState('');
-    const [redirect, setRedirect] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,7 +28,7 @@ function LoginSignup() {
         }
         console.log("Form submitted");
         try {
-            console.log("trying to fetch")
+            console.log("trying to fetch from", url)
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -42,6 +43,8 @@ function LoginSignup() {
 
             if (response.ok) {
                 localStorage.setItem('token', data.token);
+                console.log(`Redirecting to ${data.redirect}`);
+                navigate(data.redirect);
                 setError('User Signed Up');
                 setIsSignUp(false);
             } else {
