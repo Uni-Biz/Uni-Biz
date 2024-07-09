@@ -98,10 +98,52 @@ router.get("/info", authenticateJWT, async (req, res) => {
     return res.json(userInfo);
 });
 
-router.post('/create-profile', authenticateJWT, async (req, res) => {
-    const { businessName, logo, bio } = req.body;
+// router.post('/create-profile', authenticateJWT, async (req, res) => {
+//     const { businessName, logo, bio } = req.body;
+
+//     try {
+//         const existingProfile = await prisma.businessProfile.findUnique({
+//             where: { userId: req.user.id }
+//         });
+
+//         if (existingProfile) {
+//             return res.status(400).json({ error: 'Profile already exists for this user' });
+//         }
+
+//         const businessProfile = await prisma.businessProfile.create({
+//             data: {
+//                 businessName,
+//                 logo,
+//                 bio,
+//                 userId: req.user.id
+//             },
+//         });
+
+//         await prisma.user.update({
+//             where: { id: req.user.id },
+//             data: {
+//                 profileComplete: true
+//             }
+//         });
+//         const accessToken = jwt.sign({ id: req.user.id, username: req.user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+//         res.json({
+//             message: 'Profile created successfully',
+//             token: accessToken,
+//             redirect: '/dashboard'
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Error creating profile' });
+//     }
+// });
+
+router.post('/create-profile', authenticateJWT, upload.single('logo'), async (req, res) => {
+    const { businessName, bio } = req.body;
+    const logo = req.file;
 
     try {
+        // Check if a BusinessProfile already exists for the user
         const existingProfile = await prisma.businessProfile.findUnique({
             where: { userId: req.user.id }
         });
@@ -113,10 +155,10 @@ router.post('/create-profile', authenticateJWT, async (req, res) => {
         const businessProfile = await prisma.businessProfile.create({
             data: {
                 businessName,
-                logo,
                 bio,
+                logo: logo.buffer, // Store the file buffer (blob) in the database
                 userId: req.user.id
-            },
+            }
         });
 
         await prisma.user.update({
@@ -125,7 +167,9 @@ router.post('/create-profile', authenticateJWT, async (req, res) => {
                 profileComplete: true
             }
         });
+
         const accessToken = jwt.sign({ id: req.user.id, username: req.user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
 
         res.json({
             message: 'Profile created successfully',

@@ -28,7 +28,7 @@ model User {
 model BusinessProfile {
   id           Int                @id @default(autoincrement())
   businessName String
-  logo         String?
+  logo         Bytes? // Blob storage
   bio          String
   userId       Int                @unique
   user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
