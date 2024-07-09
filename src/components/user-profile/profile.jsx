@@ -13,41 +13,83 @@ function Profile() {
         setLogo(event.target.files[0]);
     };
 
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+    //     const url = `${import.meta.env.VITE_BACKEND_ADDRESS}/api/create-profile`
+    //     const body = JSON.stringify({ businessName, bio });
+    //     if (!businessName || !bio) {
+    //         setError('Please fill in Name and Bio');
+    //         return;
+    //     }
+
+    //     // const formData = new FormData();
+    //     // formData.append('logo', logo);
+    //     // formData.append('businessName', businessName);
+    //     // formData.append('bio', bio);
+    //     // console.log(formData)
+    //     try {
+    //         const token = localStorage.getItem('token');
+    //         console.log(token)
+    //         if (!token) {
+    //             setError('No token found, please login again');
+    //             return;
+    //         }
+
+    //         console.log("trying to fetch from", url)
+    //         const response = await fetch(url, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Authorization': `Bearer ${token}`,
+    //             },
+    //             body: body
+    //         });
+    //         console.log("Response:", response);
+
+    //         const data = await response.json();
+    //         console.log("DATA:", data)
+    //         if (response.ok) {
+    //             localStorage.setItem('token', data.token);
+    //             navigate('/dashboard');
+    //         } else {
+    //             setError(data.error || 'Unknown error occurred');
+    //         }
+    //     } catch (error) {
+    //         setError('Operation failed. Please try again.');
+    //         console.error(error);
+    //     }
+    // };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = `${import.meta.env.VITE_BACKEND_ADDRESS}/api/create-profile`
-        const body = JSON.stringify({ businessName, bio });
+        const url = `${import.meta.env.VITE_BACKEND_ADDRESS}/api/create-profile`;
+
         if (!businessName || !bio) {
             setError('Please fill in Name and Bio');
             return;
         }
 
-        // const formData = new FormData();
-        // formData.append('logo', logo);
-        // formData.append('businessName', businessName);
-        // formData.append('bio', bio);
-        // console.log(formData)
+        const formData = new FormData();
+        formData.append('logo', logo);  // Adding the file to FormData
+        formData.append('businessName', businessName);
+        formData.append('bio', bio);
+
         try {
             const token = localStorage.getItem('token');
-            console.log(token)
             if (!token) {
                 setError('No token found, please login again');
                 return;
             }
 
-            console.log("trying to fetch from", url)
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: body
+                body: formData
             });
-            console.log("Response:", response);
 
             const data = await response.json();
-            console.log("DATA:", data)
             if (response.ok) {
                 localStorage.setItem('token', data.token);
                 navigate('/dashboard');
