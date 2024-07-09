@@ -7,6 +7,11 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const querystring = require('querystring');
 const authenticateJWT  = require("../middlewares/authenticateJWT");
+const multer = require('multer');
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 
 router.post("/signup", async (req, res) => {
     const { first_name, last_name, email, username, password } = req.body;
@@ -94,21 +99,42 @@ router.get("/info", authenticateJWT, async (req, res) => {
 });
 
 router.post('/create-profile', authenticateJWT, async (req, res) => {
-    const { bussinessName, logo, bio } = req.body;
+    const { businessName, logo, bio } = req.body;
 
     try {
+        const existingProfile = await prisma.businessProfile.findUnique({
+            where: { userId: req.user.id }
+        });
+
+        if (existingProfile) {
+            return res.status(400).json({ error: 'Profile already exists for this user' });
+        }
+
+        const businessProfile = await prisma.businessProfile.create({
+            data: {
+                businessName,
+                logo,
+                bio,
+                userId: req.user.id
+            },
+        });
+
         await prisma.user.update({
             where: { id: req.user.id },
             data: {
-                bussinessName,
-                logo,
-                bio,
-                profileComplete: true  // Mark profile as complete
+                profileComplete: true
             }
         });
-        res.send('Profile created successfully');
+        const accessToken = jwt.sign({ id: req.user.id, username: req.user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        res.json({
+            message: 'Profile created successfully',
+            token: accessToken,
+            redirect: '/dashboard'
+        });
     } catch (error) {
-        res.status(500).send('Error creating profile');
+        console.error(error);
+        res.status(500).json({ error: 'Error creating profile' });
     }
 });
 

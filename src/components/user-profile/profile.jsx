@@ -7,6 +7,7 @@ function Profile() {
     const [businessName, setBusinessName] = useState('');
     const [bio, setBio] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleLogoChange = (event) => {
         setLogo(event.target.files[0]);
@@ -14,32 +15,42 @@ function Profile() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (!logo || !businessName || !bio) {
-            setError('Please fill in all fields');
+        const url = `${import.meta.env.VITE_BACKEND_ADDRESS}/api/create-profile`
+        const body = JSON.stringify({ businessName, bio });
+        if (!businessName || !bio) {
+            setError('Please fill in Name and Bio');
             return;
         }
 
-        const formData = new FormData();
-        formData.append('logo', logo);
-        formData.append('businessName', businessName);
-        formData.append('bio', bio);
-
+        // const formData = new FormData();
+        // formData.append('logo', logo);
+        // formData.append('businessName', businessName);
+        // formData.append('bio', bio);
+        // console.log(formData)
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/create-profile`, {
+            console.log(token)
+            if (!token) {
+                setError('No token found, please login again');
+                return;
+            }
+
+            console.log("trying to fetch from", url)
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
-                body: formData,
+                body: body
             });
+            console.log("Response:", response);
 
             const data = await response.json();
-
+            console.log("DATA:", data)
             if (response.ok) {
-
-                history.push('/dashboard');
+                localStorage.setItem('token', data.token);
+                navigate('/dashboard');
             } else {
                 setError(data.error || 'Unknown error occurred');
             }
