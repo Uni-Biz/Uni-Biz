@@ -12,7 +12,6 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-
 router.post("/signup", async (req, res) => {
     const { first_name, last_name, email, username, password } = req.body;
 
@@ -87,56 +86,28 @@ router.post('/verify-email', async (req, res) => {
 });
 
 router.get("/info", authenticateJWT, async (req, res) => {
-    const userInfo = await prisma.user.findUnique({
-        where: { username: req.user.username },
-    });
+    try {
+        const userInfo = await prisma.user.findUnique({
+            where: { username: req.user.username },
+            include: { profile: true }, 
+        });
 
-    if (userInfo === null) {
-        return res.status(404).json({ error: "User not found" });
+        if (!userInfo) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Convert logo to base64 string
+        if (userInfo.profile && userInfo.profile.logo) {
+            userInfo.profile.logo = userInfo.profile.logo.toString('base64');
+        }
+
+        return res.json(userInfo);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error.' });
     }
-
-    return res.json(userInfo);
 });
 
-// router.post('/create-profile', authenticateJWT, async (req, res) => {
-//     const { businessName, logo, bio } = req.body;
-
-//     try {
-//         const existingProfile = await prisma.businessProfile.findUnique({
-//             where: { userId: req.user.id }
-//         });
-
-//         if (existingProfile) {
-//             return res.status(400).json({ error: 'Profile already exists for this user' });
-//         }
-
-//         const businessProfile = await prisma.businessProfile.create({
-//             data: {
-//                 businessName,
-//                 logo,
-//                 bio,
-//                 userId: req.user.id
-//             },
-//         });
-
-//         await prisma.user.update({
-//             where: { id: req.user.id },
-//             data: {
-//                 profileComplete: true
-//             }
-//         });
-//         const accessToken = jwt.sign({ id: req.user.id, username: req.user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-//         res.json({
-//             message: 'Profile created successfully',
-//             token: accessToken,
-//             redirect: '/dashboard'
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Error creating profile' });
-//     }
-// });
 
 router.post('/create-profile', authenticateJWT, upload.single('logo'), async (req, res) => {
     const { businessName, bio } = req.body;
@@ -181,5 +152,7 @@ router.post('/create-profile', authenticateJWT, upload.single('logo'), async (re
         res.status(500).json({ error: 'Error creating profile' });
     }
 });
+
+
 
 module.exports = router;
