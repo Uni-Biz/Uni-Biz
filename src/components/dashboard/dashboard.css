@@ -106,3 +106,7 @@
     flex-direction: column;
     gap: 10px;
 }
+
+.buttons{
+    background-color: aqua;
+}

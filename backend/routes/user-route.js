@@ -89,7 +89,7 @@ router.get("/info", authenticateJWT, async (req, res) => {
     try {
         const userInfo = await prisma.user.findUnique({
             where: { username: req.user.username },
-            include: { profile: true }, 
+            include: { profile: true },
         });
 
         if (!userInfo) {
@@ -153,6 +153,28 @@ router.post('/create-profile', authenticateJWT, upload.single('logo'), async (re
     }
 });
 
+router.delete('/delete-profile', authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.id;
 
+        // Delete the profile associated with the user
+        await prisma.businessProfile.delete({
+            where: { userId: userId }
+        });
+
+        // Update the user to mark profile as incomplete
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                profileComplete: false
+            }
+        });
+
+        res.json({ message: 'Profile deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error deleting profile' });
+    }
+});
 
 module.exports = router;
