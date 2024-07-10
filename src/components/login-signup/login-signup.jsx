@@ -26,9 +26,8 @@ function LoginSignup() {
             setError('Please use a valid college email address');
             return;
         }
-        console.log("Form submitted");
+
         try {
-            console.log("trying to fetch from", url)
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -36,27 +35,25 @@ function LoginSignup() {
                 },
                 body: body
             });
-            console.log("Response:", response);
 
             const data = await response.json();
-            console.log("Data:", data);
 
             if (response.ok) {
-                localStorage.setItem('token', data.token);
-                console.log(`Redirecting to ${data.redirect}`);
-                navigate(data.redirect);
-                setError('User Signed Up');
-                setIsSignUp(false);
+                if (isSignUp) {
+                    setIsSignUp(false); // Switch to login form after successful signup
+                    setError('Sign up successful! Please log in.');
+                } else {
+                    localStorage.setItem('token', data.token);
+                    navigate(data.redirect);
+                }
             } else {
                 setError(data.error || 'Unknown error occurred');
             }
         } catch (error) {
             setError('Operation failed. Please try again.');
-            console.log(error);
+            console.error(error);
         }
     };
-
-
 
     return (
         <div className="container">
