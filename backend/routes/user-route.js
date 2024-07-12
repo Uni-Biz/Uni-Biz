@@ -177,4 +177,29 @@ router.delete('/delete-profile', authenticateJWT, async (req, res) => {
     }
 });
 
+// Endpoint to update user profile
+router.put('/update-profile', authenticateJWT, upload.single('logo'), async (req, res) => {
+    const { businessName, bio } = req.body;
+    const logo = req.file;
+
+    try {
+        const userId = req.user.id;
+
+        // Update the profile associated with the user
+        const updatedProfile = await prisma.businessProfile.update({
+            where: { userId: userId },
+            data: {
+                businessName,
+                bio,
+                logo: logo ? logo.buffer : undefined  // Only update logo if a new file is uploaded
+            }
+        });
+
+        res.json({ message: 'Profile updated successfully', profile: updatedProfile });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error updating profile' });
+    }
+});
+
 module.exports = router;

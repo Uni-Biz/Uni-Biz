@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Modal from '../modal/modal.jsx';
+import Profile from '../user-profile/profile.jsx';
 import './dashboard.css';
 
 function Dashboard() {
     const [user, setUser] = useState(null);
     const [error, setError] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -41,26 +44,12 @@ function Dashboard() {
         navigate('/login');
     };
 
-    const handleDeleteProfile = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/delete-profile`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            const data = await response.json();
-            if (response.ok) {
-                localStorage.removeItem('token');
-                navigate('/login');
-            } else {
-                setError(data.error || 'Error deleting profile');
-            }
-        } catch (error) {
-            setError('Operation failed. Please try again.');
-            console.error(error);
-        }
+    const handleEditProfile = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
     };
 
     if (!user) {
@@ -77,8 +66,8 @@ function Dashboard() {
                         <img src={`data:image/png;base64,${profile.logo}`} alt="Profile Logo" />
                     </div>
                     <h3>{profile.businessName}</h3>
-                    <button className="buttons">Edit Profile</button>
-                    <button className="buttons" onClick={handleDeleteProfile}>Delete Profile</button>
+                    <button className="buttons" onClick={handleEditProfile}>Edit Profile</button>
+                    <button className="buttons">Delete Profile</button>
                 </div>
                 <div className="menu">
                     <a href="#" className="active">Dashboard</a>
@@ -95,9 +84,12 @@ function Dashboard() {
                     </div>
                 </div>
                 <div className="cards">
-
+                    {}
                 </div>
             </div>
+            <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+                <Profile onClose={handleCloseModal} />
+            </Modal>
         </div>
     );
 }
