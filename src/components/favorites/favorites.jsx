@@ -165,7 +165,7 @@ function Favorites() {
                 <div className="menu">
                     <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
                     <a href="#" className="active">Favorites</a>
-                    <a href="#">Home</a>
+                    <a href="#" onClick={() => navigate('/home')}>Home</a> {/* Add this line */}
                     <a href="#">Bookings</a>
                 </div>
             </div>

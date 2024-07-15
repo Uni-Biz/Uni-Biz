@@ -209,7 +209,7 @@ function Dashboard() {
                 <div className="menu">
                     <a href="#" className="active" onClick={() => navigate('/dashboard')}>Dashboard</a>
                     <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
-                    <a href="#">Home</a>
+                    <a href="#" onClick={() => navigate('/home')}>Home</a> {/* Add this line */}
                     <a href="#">Bookings</a>
                 </div>
             </div>

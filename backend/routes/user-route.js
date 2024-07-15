@@ -427,4 +427,72 @@ router.delete('/services/:id/favorite', authenticateJWT, async (req, res) => {
     }
 });
 
+
+router.get('/services/recommended', authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Fetch all services
+        const allServices = await prisma.service.findMany({
+            include: {
+                user: {
+                    include: {
+                        profile: true
+                    }
+                },
+                reviewsAndRatings: true,
+                favoritedBy: true
+            }
+        });
+
+        // Assign weights
+        const DEFAULT_WEIGHT = 1; // Weight for all services
+        const RATING_WEIGHT_4_5 = 3; // High weight for ratings 4-5
+        const FAVORITE_WEIGHT = 2; // Weight for favorited services
+
+        // Calculate scores based on weights
+        const serviceScores = {};
+
+        allServices.forEach(service => {
+            // Initialize with default weight
+            serviceScores[service.id] = {
+                ...service,
+                score: DEFAULT_WEIGHT
+            };
+
+            // Add weight for favorited services
+            if (service.favoritedBy.some(fav => fav.id === userId)) {
+                console.log(`Service ${service.id} is favorited by user ${userId}`);
+                serviceScores[service.id].score += FAVORITE_WEIGHT;
+            }
+
+            // Add weight for highly rated services
+            const userReview = service.reviewsAndRatings.find(review => review.userId === userId);
+            if (userReview && userReview.rating >= 4) {
+                console.log(`Service ${service.id} is rated ${userReview.rating} by user ${userId}`);
+                serviceScores[service.id].score += RATING_WEIGHT_4_5;
+            }
+        });
+
+        // Convert scores object to array and sort by score
+        const recommendedServices = Object.values(serviceScores).sort((a, b) => b.score - a.score);
+
+        // Convert images to base64 and calculate average rating
+        recommendedServices.forEach(service => {
+            if (service.image) {
+                service.image = service.image.toString('base64');
+            }
+            service.averageRating = service.reviewsAndRatings.length > 0
+                ? (service.reviewsAndRatings.reduce((acc, review) => acc + review.rating, 0) / service.reviewsAndRatings.length).toFixed(2)
+                : 'No ratings yet';
+        });
+
+        res.status(200).json(recommendedServices);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching recommended services' });
+    }
+});
+
+
 module.exports = router;

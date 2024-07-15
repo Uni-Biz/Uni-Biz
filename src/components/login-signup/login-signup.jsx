@@ -59,19 +59,42 @@ function LoginSignup() {
         <div className="container">
             <div className="left-panel">
                 <h1>Get Started With <span className="uni-biz">Uni Biz</span></h1>
-                <div className="feature">
-                    <p><strong>Convenient Campus Services:</strong> Find and book services and goods, from haircuts to home-cooked meals from fellow students on campus.</p>
+                <div class="feature">
+                    <span className="wand">
+                        <i class="fa-solid fa-wand-magic-sparkles fa-3x"></i>
+                    </span>
+                    <span>
+                        <p><strong>Convenient Campus Services:</strong> Find and book services and goods, from haircuts to home-cooked meals from fellow students on campus.</p>
+                     </span>
                 </div>
-                <div className="feature">
-                    <p><strong>Support Student Businesses:</strong> Help your campus community by supporting student entrepreneurs.</p>
+
+                <div class="feature">
+                    <span className="plant">
+                        <i class="fa-solid fa-seedling fa-3x"></i>
+                    </span>
+                    <span>
+                        <p><strong>Support Student Businesses:</strong> Help your campus community by supporting student entrepreneurs.</p>
+                    </span>
                 </div>
-                <div className="feature">
+
+            <div class="feature">
+                <span className="star">
+                    <i class="fa-solid fa-star fa-3x"></i>
+                </span>
+                <span>
                     <p><strong>Trusted Reviews:</strong> Rely on verified reviews from other students for quality services.</p>
-                </div>
-                <div className="feature">
-                    <p><strong>Seamless Connections:</strong> Sign up, browse listings, and message businesses easily with your campus credentials.</p>
-                </div>
+                </span>
             </div>
+
+            <div class="feature">
+                <span className="chain">
+                    <i class="fa-solid fa-link fa-3x"></i>
+                </span>
+                <span>
+                    <p><strong>Seamless Connections:</strong> Sign up, browse listings, and message businesses easily with your campus credentials.</p>
+                </span>
+            </div>
+        </div>
             <div className="right-panel">
                 <h1>Uni Biz</h1>
                 <div className="form">
