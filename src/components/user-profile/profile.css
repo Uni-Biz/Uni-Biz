@@ -6,6 +6,10 @@
     background-color: #f0f0f0;
 }
 
+form{
+    margin-top: 50px;
+}
+
 .form-container {
     width: 50%;
     padding: 20px;

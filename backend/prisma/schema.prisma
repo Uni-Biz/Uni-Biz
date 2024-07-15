@@ -14,15 +14,17 @@ datasource db {
 }
 
 model User {
-  id          Int                 @id @default(autoincrement())
-  first_name  String
-  last_name   String
-  email       String
-  username    String              @unique
-  password    String
-  profileComplete   Boolean  @default(false)
-  profile     BusinessProfile?
-  reviews     ReviewAndRating[]   @relation("UserReviews")
+  id              Int                 @id @default(autoincrement())
+  first_name      String
+  last_name       String
+  email           String
+  username        String              @unique
+  password        String
+  profileComplete Boolean             @default(false)
+  profile         BusinessProfile?
+  reviews         ReviewAndRating[]   @relation("UserReviews")
+  services        Service[]
+  favorites       Favorite[]
 }
 
 model BusinessProfile {
@@ -37,8 +39,15 @@ model BusinessProfile {
 model Service {
   id                Int               @id @default(autoincrement())
   serviceType       String
-  pricing           Json
+  serviceName       String
+  businessName      String
+  description       String
+  price             Float
+  image             Bytes?
+  userId            Int
+  user              User              @relation(fields: [userId], references: [id])
   reviewsAndRatings ReviewAndRating[] @relation("ServiceReviews")
+  favoritedBy       Favorite[]
 }
 
 model ReviewAndRating {
@@ -49,4 +58,13 @@ model ReviewAndRating {
   reviewText String?
   user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserReviews")
   service    Service              @relation(fields: [serviceId], references: [id], onDelete: Cascade, name: "ServiceReviews")
+}
+
+model Favorite {
+  userId    Int
+  serviceId Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([userId, serviceId])
 }
