@@ -1,9 +1,5 @@
-
-
-.dashboard {
+.favorites-page {
     display: flex;
-    /* width: 100%;
-    height: 100%; */
     background-color: #ffffff;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
@@ -30,6 +26,7 @@
     height: 200px;
     border-radius: 50%;
 }
+
 .sidebar .profile h3 {
     margin: 10px 0 5px 0;
 }
@@ -83,19 +80,79 @@
     border-radius: 8px;
     width: calc(33.333% - 20px);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
 }
 
-.cards .card img {
+.card img {
     width: 100%;
     height: 200px;
     object-fit: cover;
     border-radius: 4px;
 }
 
-.error {
-    color: red;
+.card h2 {
+    margin-top: 0;
 }
 
-.buttons{
-    background-color: aqua;
+.card p {
+    margin: 5px 0;
+}
+
+.remove-favorite-button {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.remove-favorite-button:hover {
+    background-color: #ff1a1a;
+}
+
+.comments {
+    margin-top: 20px;
+}
+
+.comment {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.add-comment textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.add-comment input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.add-comment button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.add-comment button:hover {
+    background-color: #45a049;
+}
+
+.error {
+    color: red;
 }

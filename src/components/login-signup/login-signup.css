@@ -26,6 +26,10 @@ body {
     color: #ffffff;
     flex: 1;
     padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .right-panel {
@@ -113,4 +117,24 @@ form button {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+}
+
+.wand{
+    margin-right: 30px;
+    margin-top: 20px;
+}
+
+.plant{
+    margin-right: 30px;
+    margin-top: 20px;
+}
+
+.star{
+    margin-right: 30px;
+    margin-top: 5px;
+}
+
+.chain{
+    margin-right: 30px;
+    margin-top: 20px;
 }

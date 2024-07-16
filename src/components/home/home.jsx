@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../modal/modal.jsx';
-import Profile from '../user-profile/profile.jsx';
-import AddServiceForm from '../add-service-form/add-service-form.jsx';
-import './dashboard.css';
+import './home.css';
 
-function Dashboard() {
+function Home() {
     const [user, setUser] = useState(null);
     const [services, setServices] = useState([]);
+    const [visibleServices, setVisibleServices] = useState([]);
     const [selectedService, setSelectedService] = useState(null);
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [newRating, setNewRating] = useState(0);
-    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-    const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
+    const ITEMS_PER_PAGE = 2;
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -53,7 +52,7 @@ function Dashboard() {
                 navigate('/login');
                 return;
             }
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/services`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/services/recommended`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -64,6 +63,7 @@ function Dashboard() {
             }
             const servicesData = await response.json();
             setServices(servicesData);
+            setVisibleServices(servicesData.slice(0, ITEMS_PER_PAGE));
         } catch (error) {
             console.error(error);
         }
@@ -87,28 +87,6 @@ function Dashboard() {
             }
             const commentsData = await response.json();
             setComments(commentsData);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const handleDeleteService = async (serviceId) => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                navigate('/login');
-                return;
-            }
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/services/${serviceId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            if (!response.ok) {
-                throw new Error('Failed to delete service');
-            }
-            setServices(services.filter(service => service.id !== serviceId));
         } catch (error) {
             console.error(error);
         }
@@ -145,6 +123,11 @@ function Dashboard() {
         fetchComments(service.id);
     };
 
+    const handleLoadMore = () => {
+        const newVisibleServices = services.slice(0, visibleServices.length + ITEMS_PER_PAGE);
+        setVisibleServices(newVisibleServices);
+    };
+
     const handleAddToFavorites = async (serviceId) => {
         try {
             const token = localStorage.getItem('token');
@@ -172,23 +155,6 @@ function Dashboard() {
         navigate('/login');
     };
 
-    const handleEditProfile = () => {
-        setIsProfileModalOpen(true);
-    };
-
-    const handleAddService = () => {
-        setIsServiceModalOpen(true);
-    };
-
-    const handleCloseProfileModal = () => {
-        setIsProfileModalOpen(false);
-    };
-
-    const handleCloseServiceModal = () => {
-        setIsServiceModalOpen(false);
-        fetchServices();
-    };
-
     if (!user) {
         return <div>Loading...</div>;
     }
@@ -196,53 +162,53 @@ function Dashboard() {
     const profile = user.profile;
 
     return (
-        <div className="dashboard">
+        <div className="home">
             <div className="sidebar">
                 <div className="profile">
                     <div className="profile-pic">
                         <img src={`data:image/png;base64,${profile.logo}`} alt="Profile Logo" />
                     </div>
                     <h3>{profile.businessName}</h3>
-                    <button className="buttons" onClick={handleEditProfile}>Edit Profile</button>
-                    <button className="buttons">Delete Profile</button>
+                    <button className="buttons" onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
                 </div>
                 <div className="menu">
-                    <a href="#" className="active" onClick={() => navigate('/dashboard')}>Dashboard</a>
+                    <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
                     <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
-                    <a href="#" onClick={() => navigate('/home')}>Home</a> {/* Add this line */}
+                    <a href="#" className="active">Home</a>
                     <a href="#">Bookings</a>
                 </div>
             </div>
             <div className="main-content">
                 <div className="header">
-                    <h1>Welcome, {user.first_name} {user.last_name}</h1>
+                    <h1>Recommended Services</h1>
                     <div className="actions">
                         <button onClick={handleLogout}>Log Out</button>
-                        <button onClick={handleAddService}>Add Service</button>
                     </div>
                 </div>
-                <div className="cards">
-                    {services.map(service => (
-                        <div key={service.id} className="card" onClick={() => handleServiceClick(service)}>
-                            <img src={`data:image/png;base64,${service.image}`} alt="Service" />
-                            <h2>{service.serviceName}</h2>
-                            <p>{service.serviceType}</p>
-                            <p>{service.businessName}</p>
-                            <p>{service.description}</p>
-                            <p>${service.price.toFixed(2)}</p>
-                            <p>Average Rating: {service.averageRating || 'No ratings yet'}</p>
-                            <button className="delete-button" onClick={(e) => { e.stopPropagation(); handleDeleteService(service.id); }}>Delete</button>
-                            <button className="favorite-button" onClick={(e) => { e.stopPropagation(); handleAddToFavorites(service.id); }}>Favorite</button>
-                        </div>
-                    ))}
-                </div>
+                {services.length === 0 ? (
+                    <div className="no-recommendations">
+                        <p>No services available yet.</p>
+                    </div>
+                ) : (
+                    <div className="cards">
+                        {visibleServices.map(service => (
+                            <div key={service.id} className="card" onClick={() => handleServiceClick(service)}>
+                                <img src={`data:image/png;base64,${service.image}`} alt="Service" />
+                                <h2>{service.serviceName}</h2>
+                                <p>{service.serviceType}</p>
+                                <p>{service.businessName}</p>
+                                <p>{service.description}</p>
+                                <p>${service.price.toFixed(2)}</p>
+                                <p>Average Rating: {service.averageRating || 'No ratings yet'}</p>
+                                <button className="favorite-button" onClick={(e) => { e.stopPropagation(); handleAddToFavorites(service.id); }}>Favorite</button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {visibleServices.length < services.length && (
+                    <button className="load-more" onClick={handleLoadMore}>Load More</button>
+                )}
             </div>
-            <Modal isOpen={isProfileModalOpen} onClose={handleCloseProfileModal}>
-                <Profile onClose={handleCloseProfileModal} />
-            </Modal>
-            <Modal isOpen={isServiceModalOpen} onClose={handleCloseServiceModal}>
-                <AddServiceForm onClose={handleCloseServiceModal} />
-            </Modal>
             {selectedService && (
                 <Modal isOpen={true} onClose={() => setSelectedService(null)}>
                     <div className="service-details">
@@ -270,4 +236,4 @@ function Dashboard() {
     );
 }
 
-export default Dashboard;
+export default Home;
