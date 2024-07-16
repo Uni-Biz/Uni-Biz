@@ -95,8 +95,8 @@ function Profile({ onClose }) {
     };
 
     return (
-        <div className="container">
-            <div className="form-container">
+        <div className="profile-container">
+            <div className="profile-form-container">
                 <h1>{isEdit ? 'Edit Business Profile' : 'Create Business Profile'}</h1>
                 {error && <p className="error">{error}</p>}
                 <form onSubmit={handleSubmit}>

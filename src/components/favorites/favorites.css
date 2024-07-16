@@ -1,12 +1,22 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Prevent scrolling on body */
+    font-family: Arial, sans-serif;
+}
+
 .favorites-page {
     display: flex;
+    height: 100%;
+    width: 100%;
     background-color: #ffffff;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-    overflow: hidden;
 }
 
-.sidebar {
+.favorites-sidebar {
     width: 250px;
     background-color: #2d2d2d;
     color: #ffffff;
@@ -14,28 +24,29 @@
     flex-direction: column;
     align-items: center;
     padding: 20px;
+    overflow-y: auto; /* Scrollable sidebar */
 }
 
-.sidebar .profile {
+.favorites-sidebar .favorites-profile {
     text-align: center;
     margin-bottom: 20px;
 }
 
-.sidebar .profile img {
-    width: 200px;
-    height: 200px;
+.favorites-sidebar .favorites-profile img {
+    width: 100px; /* Adjusted for mobile */
+    height: 100px; /* Adjusted for mobile */
     border-radius: 50%;
 }
 
-.sidebar .profile h3 {
+.favorites-sidebar .favorites-profile h3 {
     margin: 10px 0 5px 0;
 }
 
-.sidebar .menu {
+.favorites-sidebar .favorites-menu {
     width: 100%;
 }
 
-.sidebar .menu a {
+.favorites-sidebar .favorites-menu a {
     display: block;
     padding: 10px 20px;
     color: #ffffff;
@@ -43,62 +54,68 @@
     transition: background 0.3s;
 }
 
-.sidebar .menu a:hover {
+.favorites-sidebar .favorites-menu a:hover {
     background-color: #1d1d1d;
 }
 
-.sidebar .menu a.active {
+.favorites-sidebar .favorites-menu a.active {
     background-color: #1d1d1d;
 }
 
-.main-content {
+.favorites-main-content {
     flex: 1;
     padding: 20px;
+    overflow-y: auto; /* Scrollable content */
 }
 
-.header {
+.favorites-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column; /* Adjusted for mobile */
     align-items: center;
     margin-bottom: 20px;
 }
 
-.header h1 {
+.favorites-header h1 {
     margin: 0;
 }
 
-.cards {
+.favorites-cards {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
+    justify-content: center; /* Center cards on mobile */
+    overflow-y: auto; /* Adds vertical scrolling if content overflows */
+    max-height: calc(100vh - 100px); /* Adjust based on the available space */
+    padding: 10px; /* Optional: Add some padding for better aesthetics */
 }
 
-.card {
+.favorites-card {
     background-color: white;
     padding: 20px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    width: calc(33.333% - 20px);
+    width: 100%; /* Full width on mobile */
+    max-width: 300px; /* Adjusted for mobile */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     cursor: pointer;
 }
 
-.card img {
+.favorites-card img {
     width: 100%;
     height: 200px;
     object-fit: cover;
     border-radius: 4px;
 }
 
-.card h2 {
+.favorites-card h2 {
     margin-top: 0;
 }
 
-.card p {
+.favorites-card p {
     margin: 5px 0;
 }
 
-.remove-favorite-button {
+.favorites-remove-favorite-button {
     background-color: #ff4d4d;
     color: white;
     border: none;
@@ -107,15 +124,15 @@
     cursor: pointer;
 }
 
-.remove-favorite-button:hover {
+.favorites-remove-favorite-button:hover {
     background-color: #ff1a1a;
 }
 
-.comments {
+.favorites-comments {
     margin-top: 20px;
 }
 
-.comment {
+.favorites-comment {
     background-color: #f9f9f9;
     padding: 10px;
     border: 1px solid #ddd;
@@ -123,7 +140,7 @@
     margin-bottom: 10px;
 }
 
-.add-comment textarea {
+.favorites-add-comment textarea {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
@@ -131,7 +148,7 @@
     border: 1px solid #ddd;
 }
 
-.add-comment input {
+.favorites-add-comment input {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
@@ -139,7 +156,7 @@
     border: 1px solid #ddd;
 }
 
-.add-comment button {
+.favorites-add-comment button {
     background-color: #4CAF50;
     color: white;
     border: none;
@@ -149,10 +166,29 @@
     margin-top: 10px;
 }
 
-.add-comment button:hover {
+.favorites-add-comment button:hover {
     background-color: #45a049;
 }
 
-.error {
+.favorites-error {
     color: red;
+}
+
+@media (min-width: 768px) {
+    .favorites-page {
+        flex-direction: row;
+    }
+    .favorites-sidebar {
+        width: 250px;
+    }
+    .favorites-main-content {
+        padding: 40px;
+    }
+    .favorites-header {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .favorites-card {
+        width: calc(33.333% - 20px);
+    }
 }

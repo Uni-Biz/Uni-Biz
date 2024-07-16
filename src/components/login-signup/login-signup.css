@@ -9,19 +9,23 @@ body {
     background-color: #f0f0f0;
 }
 
-.container {
+.login-signup-container {
     display: flex;
     width: 80%;
-    height: 60%;
+    max-width: 1200px;
+    height: auto;
     background-color: #ffffff;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+    margin: 20px;
+    box-sizing: border-box;
 }
 
-.left-panel, .right-panel {
+.login-left-panel, .login-right-panel {
     padding: 20px;
 }
 
-.left-panel {
+.login-left-panel {
     background-color: #234a7c;
     color: #ffffff;
     flex: 1;
@@ -32,7 +36,7 @@ body {
     box-sizing: border-box;
 }
 
-.right-panel {
+.login-right-panel {
     flex: 1;
     padding: 40px;
     display: flex;
@@ -49,27 +53,27 @@ h1 {
     font-weight: bold;
 }
 
-.feature {
+.login-feature {
     display: flex;
     align-items: flex-start;
     margin-bottom: 20px;
 }
 
-.feature img {
+.login-feature img {
     margin-right: 10px;
 }
 
-.form {
+.login-form {
     width: 100%;
 }
 
-.tab {
+.login-tab {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
 }
 
-.tab button {
+.login-tab button {
     background: none;
     border: none;
     font-size: 16px;
@@ -77,7 +81,7 @@ h1 {
     cursor: pointer;
 }
 
-.tab button.active {
+.login-tab button.active {
     background-color: #234a7c;
     color: #ffffff;
 }
@@ -103,10 +107,11 @@ form input {
 .name-field {
     flex: 1;
     margin-right: 0px;
+    width: 300px;
 }
 
 .name-field:last-child {
-    margin-left:0px;
+    margin-left:10px;
 }
 
 form button {
@@ -137,4 +142,9 @@ form button {
 .chain{
     margin-right: 30px;
     margin-top: 20px;
+}
+
+.error {
+    color: red;
+    margin-bottom: 15px;
 }

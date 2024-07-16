@@ -163,23 +163,23 @@ function Home() {
 
     return (
         <div className="home">
-            <div className="sidebar">
-                <div className="profile">
+            <div className="home-sidebar">
+                <div className="home-profile">
                     <div className="profile-pic">
                         <img src={`data:image/png;base64,${profile.logo}`} alt="Profile Logo" />
                     </div>
                     <h3>{profile.businessName}</h3>
-                    <button className="buttons" onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
+                    <button className="home-buttons" onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
                 </div>
-                <div className="menu">
+                <div className="home-menu">
                     <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
                     <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
                     <a href="#" className="active">Home</a>
                     <a href="#">Bookings</a>
                 </div>
             </div>
-            <div className="main-content">
-                <div className="header">
+            <div className="home-main-content">
+                <div className="home-header">
                     <h1>Recommended Services</h1>
                     <div className="actions">
                         <button onClick={handleLogout}>Log Out</button>
@@ -190,9 +190,9 @@ function Home() {
                         <p>No services available yet.</p>
                     </div>
                 ) : (
-                    <div className="cards">
+                    <div className="home-cards">
                         {visibleServices.map(service => (
-                            <div key={service.id} className="card" onClick={() => handleServiceClick(service)}>
+                            <div key={service.id} className="home-card" onClick={() => handleServiceClick(service)}>
                                 <img src={`data:image/png;base64,${service.image}`} alt="Service" />
                                 <h2>{service.serviceName}</h2>
                                 <p>{service.serviceType}</p>
@@ -200,13 +200,13 @@ function Home() {
                                 <p>{service.description}</p>
                                 <p>${service.price.toFixed(2)}</p>
                                 <p>Average Rating: {service.averageRating || 'No ratings yet'}</p>
-                                <button className="favorite-button" onClick={(e) => { e.stopPropagation(); handleAddToFavorites(service.id); }}>Favorite</button>
+                                <button className="home-favorite-button" onClick={(e) => { e.stopPropagation(); handleAddToFavorites(service.id); }}>Favorite</button>
                             </div>
                         ))}
                     </div>
                 )}
                 {visibleServices.length < services.length && (
-                    <button className="load-more" onClick={handleLoadMore}>Load More</button>
+                    <button className="home-load-more" onClick={handleLoadMore}>Load More</button>
                 )}
             </div>
             {selectedService && (
@@ -217,14 +217,14 @@ function Home() {
                         <p>{selectedService.description}</p>
                         <p>Average Rating: {selectedService.averageRating || 'No ratings yet'}</p>
                         <h3>Comments</h3>
-                        <div className="comments">
+                        <div className="home-comments">
                             {comments.map(comment => (
-                                <div key={comment.id} className="comment">
+                                <div key={comment.id} className="home-comment">
                                     <p><strong>{comment.user.username}</strong>: {comment.reviewText}</p>
                                 </div>
                             ))}
                         </div>
-                        <div className="add-comment">
+                        <div className="home-add-comment">
                             <textarea value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Add a comment"></textarea>
                             <input type="number" value={newRating} onChange={e => setNewRating(parseInt(e.target.value))} placeholder="Rate (1-5)" min="1" max="5" />
                             <button onClick={() => handleAddComment(selectedService.id)}>Submit Comment</button>

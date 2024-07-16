@@ -56,49 +56,49 @@ function LoginSignup() {
     };
 
     return (
-        <div className="container">
-            <div className="left-panel">
+        <div className="login-signup-container">
+            <div className="login-left-panel">
                 <h1>Get Started With <span className="uni-biz">Uni Biz</span></h1>
-                <div class="feature">
+                <div className="login-feature">
                     <span className="wand">
-                        <i class="fa-solid fa-wand-magic-sparkles fa-3x"></i>
+                        <i className="fa-solid fa-wand-magic-sparkles fa-3x"></i>
                     </span>
                     <span>
                         <p><strong>Convenient Campus Services:</strong> Find and book services and goods, from haircuts to home-cooked meals from fellow students on campus.</p>
-                     </span>
+                    </span>
                 </div>
 
-                <div class="feature">
+                <div className="login-feature">
                     <span className="plant">
-                        <i class="fa-solid fa-seedling fa-3x"></i>
+                        <i className="fa-solid fa-seedling fa-3x"></i>
                     </span>
                     <span>
                         <p><strong>Support Student Businesses:</strong> Help your campus community by supporting student entrepreneurs.</p>
                     </span>
                 </div>
 
-            <div class="feature">
-                <span className="star">
-                    <i class="fa-solid fa-star fa-3x"></i>
-                </span>
-                <span>
-                    <p><strong>Trusted Reviews:</strong> Rely on verified reviews from other students for quality services.</p>
-                </span>
-            </div>
+                <div className="login-feature">
+                    <span className="star">
+                        <i className="fa-solid fa-star fa-3x"></i>
+                    </span>
+                    <span>
+                        <p><strong>Trusted Reviews:</strong> Rely on verified reviews from other students for quality services.</p>
+                    </span>
+                </div>
 
-            <div class="feature">
-                <span className="chain">
-                    <i class="fa-solid fa-link fa-3x"></i>
-                </span>
-                <span>
-                    <p><strong>Seamless Connections:</strong> Sign up, browse listings, and message businesses easily with your campus credentials.</p>
-                </span>
+                <div className="login-feature">
+                    <span className="chain">
+                        <i className="fa-solid fa-link fa-3x"></i>
+                    </span>
+                    <span>
+                        <p><strong>Seamless Connections:</strong> Sign up, browse listings, and message businesses easily with your campus credentials.</p>
+                    </span>
+                </div>
             </div>
-        </div>
-            <div className="right-panel">
+            <div className="login-right-panel">
                 <h1>Uni Biz</h1>
-                <div className="form">
-                    <div className="tab">
+                <div className="login-form">
+                    <div className="login-tab">
                         <button className={!isSignUp ? "active" : ""} onClick={() => setIsSignUp(false)}>Log In</button>
                         <button className={isSignUp ? "active" : ""} onClick={() => setIsSignUp(true)}>Sign Up</button>
                     </div>

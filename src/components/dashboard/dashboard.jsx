@@ -196,34 +196,34 @@ function Dashboard() {
     const profile = user.profile;
 
     return (
-        <div className="dashboard">
-            <div className="sidebar">
-                <div className="profile">
+        <div className="dashboard-dashboard">
+            <div className="dashboard-sidebar">
+                <div className="dashboard-profile">
                     <div className="profile-pic">
                         <img src={`data:image/png;base64,${profile.logo}`} alt="Profile Logo" />
                     </div>
                     <h3>{profile.businessName}</h3>
-                    <button className="buttons" onClick={handleEditProfile}>Edit Profile</button>
-                    <button className="buttons">Delete Profile</button>
+                    <button className="dashboard-buttons" onClick={handleEditProfile}>Edit Profile</button>
+                    <button className="dashboard-buttons">Delete Profile</button>
                 </div>
-                <div className="menu">
+                <div className="dashboard-menu">
                     <a href="#" className="active" onClick={() => navigate('/dashboard')}>Dashboard</a>
                     <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
-                    <a href="#" onClick={() => navigate('/home')}>Home</a> {/* Add this line */}
+                    <a href="#" onClick={() => navigate('/home')}>Home</a>
                     <a href="#">Bookings</a>
                 </div>
             </div>
-            <div className="main-content">
-                <div className="header">
+            <div className="dashboard-main-content">
+                <div className="dashboard-header">
                     <h1>Welcome, {user.first_name} {user.last_name}</h1>
                     <div className="actions">
                         <button onClick={handleLogout}>Log Out</button>
                         <button onClick={handleAddService}>Add Service</button>
                     </div>
                 </div>
-                <div className="cards">
+                <div className="dashboard-cards">
                     {services.map(service => (
-                        <div key={service.id} className="card" onClick={() => handleServiceClick(service)}>
+                        <div key={service.id} className="dashboard-card" onClick={() => handleServiceClick(service)}>
                             <img src={`data:image/png;base64,${service.image}`} alt="Service" />
                             <h2>{service.serviceName}</h2>
                             <p>{service.serviceType}</p>
