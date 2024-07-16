@@ -51,13 +51,14 @@ model Service {
 }
 
 model ReviewAndRating {
-  id         Int                  @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   userId     Int
   serviceId  Int
   rating     Int
   reviewText String?
-  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserReviews")
-  service    Service              @relation(fields: [serviceId], references: [id], onDelete: Cascade, name: "ServiceReviews")
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade, name: "UserReviews")
+  service    Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade, name: "ServiceReviews")
 }
 
 model Favorite {

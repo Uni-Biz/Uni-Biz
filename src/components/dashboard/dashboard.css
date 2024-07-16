@@ -1,16 +1,22 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Prevent scrolling on body */
+    font-family: Arial, sans-serif;
+}
 
-
-.dashboard {
+.dashboard-dashboard {
     display: flex;
-    /* width: 100%;
-    height: 100%; */
+    height: 100%;
+    width: 100%;
     background-color: #ffffff;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-    overflow: hidden;
 }
 
-.sidebar {
+.dashboard-sidebar {
     width: 250px;
     background-color: #2d2d2d;
     color: #ffffff;
@@ -18,27 +24,29 @@
     flex-direction: column;
     align-items: center;
     padding: 20px;
+    overflow-y: auto; /* Scrollable sidebar */
 }
 
-.sidebar .profile {
+.dashboard-sidebar .dashboard-profile {
     text-align: center;
     margin-bottom: 20px;
 }
 
-.sidebar .profile img {
-    width: 200px;
-    height: 200px;
+.dashboard-sidebar .dashboard-profile img {
+    width: 100px; /* Adjusted for mobile */
+    height: 100px; /* Adjusted for mobile */
     border-radius: 50%;
 }
-.sidebar .profile h3 {
+
+.dashboard-sidebar .dashboard-profile h3 {
     margin: 10px 0 5px 0;
 }
 
-.sidebar .menu {
+.dashboard-sidebar .dashboard-menu {
     width: 100%;
 }
 
-.sidebar .menu a {
+.dashboard-sidebar .dashboard-menu a {
     display: block;
     padding: 10px 20px;
     color: #ffffff;
@@ -46,56 +54,81 @@
     transition: background 0.3s;
 }
 
-.sidebar .menu a:hover {
+.dashboard-sidebar .dashboard-menu a:hover {
     background-color: #1d1d1d;
 }
 
-.sidebar .menu a.active {
+.dashboard-sidebar .dashboard-menu a.active {
     background-color: #1d1d1d;
 }
 
-.main-content {
+.dashboard-main-content {
     flex: 1;
     padding: 20px;
+    overflow-y: auto; /* Scrollable content */
 }
 
-.header {
+.dashboard-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column; /* Adjusted for mobile */
     align-items: center;
     margin-bottom: 20px;
 }
 
-.header h1 {
+.dashboard-header h1 {
     margin: 0;
 }
 
-.cards {
+.dashboard-cards {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
+    justify-content: center; /* Center cards on mobile */
+    overflow-y: auto; /* Adds vertical scrolling if content overflows */
+    max-height: calc(100vh - 100px); /* Adjust based on the available space */
+    padding: 10px; /* Optional: Add some padding for better aesthetics */
 }
 
-.card {
+.dashboard-card {
     background-color: white;
     padding: 20px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    width: calc(33.333% - 20px);
+    width: 100%; /* Full width on mobile */
+    max-width: 300px; /* Adjusted for mobile */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.cards .card img {
+.dashboard-cards .dashboard-card img {
     width: 100%;
     height: 200px;
     object-fit: cover;
     border-radius: 4px;
 }
 
-.error {
+.dashboard-error {
     color: red;
 }
 
-.buttons{
+.dashboard-buttons {
     background-color: aqua;
+}
+
+@media (min-width: 768px) {
+    .dashboard-dashboard {
+        flex-direction: row;
+    }
+    .dashboard-sidebar {
+        width: 250px;
+    }
+    .dashboard-main-content {
+        padding: 40px;
+    }
+    .dashboard-header {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .dashboard-card {
+        width: calc(33.333% - 20px);
+    }
 }

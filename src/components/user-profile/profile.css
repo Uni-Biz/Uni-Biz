@@ -7,12 +7,11 @@ body {
     align-items: center;
     height: 100vh;
     background-color: #f0f0f0;
-    overflow: auto;
 }
 
-.container {
+.profile-container {
     display: flex;
-    width: 80%;
+    width: 30%;
     max-width: 1200px;
     height: auto;
     background-color: #ffffff;
@@ -23,23 +22,7 @@ body {
     overflow: auto;
 }
 
-.left-panel, .right-panel {
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.left-panel {
-    background-color: #234a7c;
-    color: #ffffff;
-    flex: 1;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    box-sizing: border-box;
-}
-
-.right-panel {
+.profile-form-container {
     flex: 1;
     padding: 40px;
     display: flex;
@@ -57,27 +40,27 @@ h1 {
     font-weight: bold;
 }
 
-.feature {
+.profile-feature {
     display: flex;
     align-items: flex-start;
     margin-bottom: 20px;
 }
 
-.feature img {
+.profile-feature img {
     margin-right: 10px;
 }
 
-.form {
+.profile-form {
     width: 100%;
 }
 
-.tab {
+.profile-tab {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
 }
 
-.tab button {
+.profile-tab button {
     background: none;
     border: none;
     font-size: 16px;
@@ -85,15 +68,11 @@ h1 {
     cursor: pointer;
 }
 
-.tab button.active {
-    background-color: #234a7c;
-    color: #ffffff;
-}
 
 form {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: left;
     width: 100%;
 }
 
@@ -107,18 +86,18 @@ form input, form textarea {
     box-sizing: border-box;
 }
 
-.name-fields {
+.profile-name-fields {
     display: flex;
     justify-content: space-between;
     width: 100%;
 }
 
-.name-field {
+.profile-name-field {
     flex: 1;
     margin-right: 10px;
 }
 
-.name-field:last-child {
+.profile-name-field:last-child {
     margin-right: 0;
 }
 
@@ -144,7 +123,7 @@ form button {
         height: auto;
     }
 
-    .container {
+    .profile-container {
         flex-direction: column;
         align-items: center;
         width: 100%;
@@ -153,21 +132,11 @@ form button {
         overflow: auto;
     }
 
-    .left-panel, .right-panel {
-        padding: 20px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .left-panel {
-        padding: 20px;
-    }
-
-    .name-fields {
+    .profile-name-fields {
         flex-direction: column;
     }
 
-    .name-field {
+    .profile-name-field {
         margin-right: 0;
         margin-bottom: 10px;
         width: 100%;
