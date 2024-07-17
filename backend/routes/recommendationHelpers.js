@@ -1,13 +1,28 @@
-const applyTimeDecay = (ratings) => {
+const applyTimeDecay = (allReviews) => {
+    const rateTime = {};
     const now = new Date();
-    return ratings.map(rating => {
-        const ageInDays = (now - new Date(rating.createdAt)) / (1000 * 60 * 60 * 24);
-        const decayFactor = Math.max(1 - ageInDays / 0.08, 0); // Linear decay every hour
-        return rating.rating * decayFactor;
+
+    allReviews.forEach(review => {
+        const ageInDays = (now - new Date(review.createdAt)) / (1000 * 60 * 60 * 24);
+        const decayFactor = Math.max(1 - ageInDays / 2, 0); // Decay every hour
+        const decayedRating = review.rating * decayFactor;
+
+        if (!rateTime[review.serviceId]) {
+            rateTime[review.serviceId] = [];
+        }
+
+        rateTime[review.serviceId].push({
+            rating: review.rating,
+            decayedRating: decayedRating,
+            createdAt: review.createdAt
+        });
     });
+
+    console.log(rateTime)
+    return rateTime;
 };
 
-const calculateRecommendedServices = (allServices, userId) => {
+const calculateRecommendedServices = (allServices, userId, rateTime) => {
     // Assign weights
     const DEFAULT_WEIGHT = 1;
     const RATING_WEIGHT_4_5 = 3;
@@ -23,19 +38,20 @@ const calculateRecommendedServices = (allServices, userId) => {
         };
 
         // Add weight for favorited services
-        if (service.favoritedBy.some(fav => fav.id === userId)) {
-            console.log(`Service ${service.id} is favorited by user ${userId}`);
+        if (service.favoritedBy.some(fav => fav.userId === userId)) {
             serviceScores[service.id].score += FAVORITE_WEIGHT;
         }
 
-        // Apply time decay to ratings
-        const decayedRatings = applyTimeDecay(service.reviewsAndRatings);
-
-     // Add weight for highly rated services based on decayed ratings
-        const userReview = decayedRatings.find((rating, index) => service.reviewsAndRatings[index].userId === userId && rating >= 4);
-        if (userReview) {
-            console.log(`Service ${service.id} is rated ${userReview} by user ${userId}`);
+        // Add weight for highly rated services
+        const userReview = service.reviewsAndRatings.find(review => review.userId === userId);
+        if (userReview && userReview.rating >= 4) {
             serviceScores[service.id].score += RATING_WEIGHT_4_5;
+        }
+
+        // Incorporate decayed ratings into the score
+        if (rateTime[service.id]) {
+            const averageDecayedRating = rateTime[service.id].reduce((acc, review) => acc + review.decayedRating, 0) / rateTime[service.id].length;
+            serviceScores[service.id].score += averageDecayedRating;
         }
     });
 
@@ -54,8 +70,7 @@ const calculateRecommendedServices = (allServices, userId) => {
     return recommendedServices;
 };
 
-
-
 module.exports = {
     calculateRecommendedServices,
+    applyTimeDecay,
 };

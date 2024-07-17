@@ -5,12 +5,11 @@ import './add-service-form.css';
 const AddServiceForm = ({ onClose }) => {
     const [serviceType, setServiceType] = useState('');
     const [serviceName, setServiceName] = useState('');
-    const [businessName, setBusinessName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
     const [image, setImage] = useState(null);
     const [error, setError] = useState('');
-    const serviceTypes = ['Type1', 'Type2', 'Type3']; // Replace with actual service types
+    const serviceTypes = ['Hair', 'Clothes', 'Food', 'Cosmetic']; // Replace with actual service types
 
     const handleSubmit = async (e) => {
         e.preventDefault();
