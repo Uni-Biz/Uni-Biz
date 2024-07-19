@@ -118,6 +118,28 @@ function Home() {
         }
     };
 
+    const handleDeleteComment = async (serviceId, commentId) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/services/${serviceId}/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to delete comment');
+            }
+            fetchComments(serviceId); // Refresh comments after deletion
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     const handleServiceClick = async (service) => {
         setSelectedService(service);
         fetchComments(service.id);
@@ -221,6 +243,9 @@ function Home() {
                             {comments.map(comment => (
                                 <div key={comment.id} className="home-comment">
                                     <p><strong>{comment.user.username}</strong>: {comment.reviewText}</p>
+                                    {comment.user.id === user.id && (
+                                        <button onClick={() => handleDeleteComment(selectedService.id, comment.id)}>Delete</button>
+                                    )}
                                 </div>
                             ))}
                         </div>

@@ -40,7 +40,6 @@ model Service {
   id                Int               @id @default(autoincrement())
   serviceType       String
   serviceName       String
-  businessName      String
   description       String
   price             Float
   image             Bytes?

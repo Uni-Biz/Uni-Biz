@@ -4,12 +4,14 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const { calculateRecommendedServices } = require('./recommendationHelpers');
 const {applyTimeDecay} = require('./recommendationHelpers')
+const {getMatrix} = require('./recommendationHelpers')
 const prisma = new PrismaClient();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const querystring = require('querystring');
 const authenticateJWT  = require("../middlewares/authenticateJWT");
 const multer = require('multer');
+const { get } = require('https');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -208,14 +210,13 @@ router.put('/update-profile', authenticateJWT, upload.single('logo'), async (req
 
 router.post('/create-service', authenticateJWT, upload.single('image'), async (req, res) => {
     try {
-        const { serviceType, serviceName, businessName, description, price } = req.body;
+        const { serviceType, serviceName, description, price } = req.body;
         const image = req.file ? req.file.buffer : null;
 
         const newService = await prisma.service.create({
             data: {
                 serviceType,
                 serviceName,
-                businessName,
                 description,
                 price: parseFloat(price),
                 image,
@@ -302,6 +303,37 @@ router.post('/services/:id/comments', authenticateJWT, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error adding comment' });
+    }
+});
+
+router.delete('/services/:serviceId/comments/:commentId', authenticateJWT, async (req, res) => {
+    const { serviceId, commentId } = req.params;
+    const userId = req.user.id;
+
+    try {
+        // Check if the review belongs to the current user
+        const review = await prisma.reviewAndRating.findUnique({
+            where: { id: parseInt(commentId) },
+            include: { user: true }
+        });
+
+        if (!review) {
+            return res.status(404).json({ error: 'Review not found' });
+        }
+
+        if (review.userId !== userId) {
+            return res.status(403).json({ error: 'You can only delete your own comments' });
+        }
+
+        // Delete the review
+        await prisma.reviewAndRating.delete({
+            where: { id: parseInt(commentId) }
+        });
+
+        res.status(200).json({ message: 'Review deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error deleting review' });
     }
 });
 
@@ -439,14 +471,33 @@ router.get('/services/recommended', authenticateJWT, async (req, res) => {
                 rating: true,
                 createdAt: true,
                 serviceId: true, // Include serviceId to filter reviews by service
+                userId: true,
             },
         });
-        console.log(allReviews)
+
+        //Fetch Favorites
+        const allFavorites = await prisma.favorite.findMany({
+            select: {
+                user: {
+                    select: {
+                        username: true
+                    }
+                },
+                service: {
+                    select: {
+                        serviceName: true
+                    }
+                }
+            }
+        });
+
+        const { matrix, cosineSimMatrix, users, services } = getMatrix(allFavorites);
+
        // Apply time decay to the reviews
        const rateTime = applyTimeDecay(allReviews);
 
        // Calculate recommended services
-       const recommendedServices = calculateRecommendedServices(allServices, userId, rateTime);
+       const recommendedServices = calculateRecommendedServices(allServices, userId, rateTime, cosineSimMatrix, services, allFavorites);
 
         res.status(200).json(recommendedServices);
     } catch (error) {

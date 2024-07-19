@@ -17,7 +17,6 @@ const AddServiceForm = ({ onClose }) => {
         const formData = new FormData();
         formData.append('serviceType', serviceType);
         formData.append('serviceName', serviceName);
-        formData.append('businessName', businessName);
         formData.append('description', description);
         formData.append('price', price);
         if (image) {
