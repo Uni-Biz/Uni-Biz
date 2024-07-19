@@ -13,7 +13,7 @@ function Home() {
     const [newRating, setNewRating] = useState(0);
     const [error, setError] = useState('');
     const navigate = useNavigate();
-    const ITEMS_PER_PAGE = 2;
+    const ITEMS_PER_PAGE = 3;
 
     useEffect(() => {
         const fetchUserInfo = async () => {

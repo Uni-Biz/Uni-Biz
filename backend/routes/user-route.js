@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const { calculateRecommendedServices } = require('./recommendationHelpers');
+const {applyTimeDecay} = require('./recommendationHelpers')
 const prisma = new PrismaClient();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -409,6 +410,7 @@ router.delete('/services/:id/favorite', authenticateJWT, async (req, res) => {
 });
 
 
+
 router.get('/services/recommended', authenticateJWT, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -426,8 +428,25 @@ router.get('/services/recommended', authenticateJWT, async (req, res) => {
             }
         });
 
-        // Calculate recommended services
-        const recommendedServices = calculateRecommendedServices(allServices, userId);
+        // Fetch all reviews
+        const allReviews = await prisma.reviewAndRating.findMany({
+            where: {
+                serviceId: {
+                    in: allServices.map(service => service.id)
+                }
+            },
+            select: {
+                rating: true,
+                createdAt: true,
+                serviceId: true, // Include serviceId to filter reviews by service
+            },
+        });
+        console.log(allReviews)
+       // Apply time decay to the reviews
+       const rateTime = applyTimeDecay(allReviews);
+
+       // Calculate recommended services
+       const recommendedServices = calculateRecommendedServices(allServices, userId, rateTime);
 
         res.status(200).json(recommendedServices);
     } catch (error) {
