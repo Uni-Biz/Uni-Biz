@@ -1,10 +1,64 @@
+const math = require('mathjs');
+
+const getMatrix = (allFavorites) => {
+    const userSet = new Set();
+    const serviceSet = new Set();
+
+    allFavorites.forEach(favorite => {
+        userSet.add(favorite.user.username);
+        serviceSet.add(favorite.service.serviceName);
+    });
+
+    const users = Array.from(userSet);
+    const services = Array.from(serviceSet);
+
+
+    const matrix = Array(users.length).fill(null).map(() => Array(services.length).fill(0));
+
+    allFavorites.forEach(favorite => {
+        const userIndex = users.indexOf(favorite.user.username);
+        const serviceIndex = services.indexOf(favorite.service.serviceName);
+        if (userIndex !== -1 && serviceIndex !== -1) {
+            matrix[userIndex][serviceIndex] = 1;
+        }
+    });
+
+    function cosineSimilarity(vecA, vecB) {
+        const dotProduct = math.dot(vecA, vecB);
+        const magnitudeA = math.sqrt(math.dot(vecA, vecA));
+        const magnitudeB = math.sqrt(math.dot(vecB, vecB));
+        return dotProduct / (magnitudeA * magnitudeB);
+    }
+
+    function calculateCosineSimilarityMatrix(matrix) {
+        const numServices = matrix[0].length;
+        const cosineSimMatrix = Array(numServices).fill(null).map(() => Array(numServices).fill(0));
+
+        for (let i = 0; i < numServices; i++) {
+            for (let j = 0; j < numServices; j++) {
+                cosineSimMatrix[i][j] = cosineSimilarity(matrix.map(row => row[i]), matrix.map(row => row[j]));
+            }
+        }
+        return cosineSimMatrix;
+
+    }
+
+
+    const cosineSimMatrix = calculateCosineSimilarityMatrix(matrix);
+
+
+
+    return { matrix, cosineSimMatrix, users, services };
+}
+
+
 const applyTimeDecay = (allReviews) => {
     const rateTime = {};
     const now = new Date();
 
     allReviews.forEach(review => {
         const ageInDays = (now - new Date(review.createdAt)) / (1000 * 60 * 60 * 24);
-        const decayFactor = Math.max(1 - ageInDays / 2, 0); // Decay every hour
+        const decayFactor = Math.max(1 - ageInDays / 2, 0); // Decay every 2 days
         const decayedRating = review.rating * decayFactor;
 
         if (!rateTime[review.serviceId]) {
@@ -14,19 +68,20 @@ const applyTimeDecay = (allReviews) => {
         rateTime[review.serviceId].push({
             rating: review.rating,
             decayedRating: decayedRating,
-            createdAt: review.createdAt
+            createdAt: review.createdAt,
+            userId: review.userId
         });
     });
 
-    console.log(rateTime)
     return rateTime;
 };
 
-const calculateRecommendedServices = (allServices, userId, rateTime) => {
+const calculateRecommendedServices = (allServices, userId, rateTime, cosineSimMatrix, services, userFavorites) => {
     // Assign weights
     const DEFAULT_WEIGHT = 1;
-    const RATING_WEIGHT_4_5 = 3;
-    const FAVORITE_WEIGHT = 2;
+    const MAX_RATING_WEIGHT= 4;
+    const FAVORITE_WEIGHT = 2.5;
+    const SIMILARITY_WEIGHT = 2;
 
     // Calculate scores based on weights
     const serviceScores = {};
@@ -37,23 +92,41 @@ const calculateRecommendedServices = (allServices, userId, rateTime) => {
             score: DEFAULT_WEIGHT
         };
 
+        if (rateTime[service.id]) {
+            const userDecayedRatings = rateTime[service.id].filter(review => review.userId === userId);
+
+            if (userDecayedRatings.length > 0) {
+                const totalWeight = userDecayedRatings.reduce((acc, review) => {
+                    const weight = (MAX_RATING_WEIGHT * review.decayedRating) / 5;
+                    return acc + weight;
+                }, 0);
+
+                const averageWeight = totalWeight / userDecayedRatings.length;
+                serviceScores[service.id].score += averageWeight;
+            }
+        }
+
         // Add weight for favorited services
         if (service.favoritedBy.some(fav => fav.userId === userId)) {
             serviceScores[service.id].score += FAVORITE_WEIGHT;
         }
 
-        // Add weight for highly rated services
-        const userReview = service.reviewsAndRatings.find(review => review.userId === userId);
-        if (userReview && userReview.rating >= 4) {
-            serviceScores[service.id].score += RATING_WEIGHT_4_5;
+        // Add weights based off cosinesim
+        const serviceIndex = services.indexOf(service.serviceName);
+        if (serviceIndex !== -1) {
+            allServices.forEach(otherService => {
+                const otherServiceIndex = services.indexOf(otherService.serviceName);
+                if (otherServiceIndex !== -1 && serviceIndex !== otherServiceIndex) {
+                    const similarity = cosineSimMatrix[serviceIndex][otherServiceIndex];
+                    if (similarity > 0) {
+                        serviceScores[service.id].score += similarity * SIMILARITY_WEIGHT;
+                    }
+                }
+            });
         }
 
-        // Incorporate decayed ratings into the score
-        if (rateTime[service.id]) {
-            const averageDecayedRating = rateTime[service.id].reduce((acc, review) => acc + review.decayedRating, 0) / rateTime[service.id].length;
-            serviceScores[service.id].score += averageDecayedRating;
-        }
     });
+
 
     // Convert scores object to array and sort by score
     const recommendedServices = Object.values(serviceScores).sort((a, b) => b.score - a.score);
@@ -73,4 +146,5 @@ const calculateRecommendedServices = (allServices, userId, rateTime) => {
 module.exports = {
     calculateRecommendedServices,
     applyTimeDecay,
+    getMatrix
 };
