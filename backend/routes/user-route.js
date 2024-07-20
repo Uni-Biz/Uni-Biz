@@ -210,7 +210,7 @@ router.put('/update-profile', authenticateJWT, upload.single('logo'), async (req
 
 router.post('/create-service', authenticateJWT, upload.single('image'), async (req, res) => {
     try {
-        const { serviceType, serviceName, description, price } = req.body;
+        const { serviceType, serviceName, description, price, availableTimes } = req.body;
         const image = req.file ? req.file.buffer : null;
 
         const newService = await prisma.service.create({
@@ -224,6 +224,19 @@ router.post('/create-service', authenticateJWT, upload.single('image'), async (r
             }
         });
 
+        if (availableTimes) {
+            const times = JSON.parse(availableTimes);
+            for (const time of times) {
+                await prisma.availableTime.create({
+                    data: {
+                        serviceId: newService.id,
+                        startTime: new Date(time.startTime),
+                        endTime: new Date(time.endTime)
+                    }
+                });
+            }
+        }
+
         res.status(201).json({
             message: 'Service created successfully',
             service: newService
@@ -233,6 +246,7 @@ router.post('/create-service', authenticateJWT, upload.single('image'), async (r
         res.status(500).json({ error: 'Error creating service' });
     }
 });
+
 
 
 
@@ -263,6 +277,18 @@ router.get('/services', authenticateJWT, async (req, res) => {
     }
 });
 
+router.get('/services/:id/available-times', authenticateJWT, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const availableTimes = await prisma.availableTime.findMany({
+            where: { serviceId: parseInt(id) }
+        });
+        res.status(200).json(availableTimes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching available times' });
+    }
+});
 
 router.delete('/services/:id', authenticateJWT, async (req, res) => {
     const { id } = req.params;
@@ -456,7 +482,8 @@ router.get('/services/recommended', authenticateJWT, async (req, res) => {
                     }
                 },
                 reviewsAndRatings: true,
-                favoritedBy: true
+                favoritedBy: true,
+                availableTimes: true // Include available times
             }
         });
 
@@ -475,7 +502,7 @@ router.get('/services/recommended', authenticateJWT, async (req, res) => {
             },
         });
 
-        //Fetch Favorites
+        // Fetch Favorites
         const allFavorites = await prisma.favorite.findMany({
             select: {
                 user: {
@@ -493,16 +520,63 @@ router.get('/services/recommended', authenticateJWT, async (req, res) => {
 
         const { matrix, cosineSimMatrix, users, services } = getMatrix(allFavorites);
 
-       // Apply time decay to the reviews
-       const rateTime = applyTimeDecay(allReviews);
+        // Apply time decay to the reviews
+        const rateTime = applyTimeDecay(allReviews);
 
-       // Calculate recommended services
-       const recommendedServices = calculateRecommendedServices(allServices, userId, rateTime, cosineSimMatrix, services, allFavorites);
+        // Calculate recommended services
+        const recommendedServices = calculateRecommendedServices(allServices, userId, rateTime, cosineSimMatrix, services, allFavorites);
 
         res.status(200).json(recommendedServices);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error fetching recommended services' });
+    }
+});
+
+router.post('/book-service', authenticateJWT, async (req, res) => {
+    try {
+        const { serviceId, timeId } = req.body;
+
+        const service = await prisma.service.findUnique({
+            where: { id: parseInt(serviceId) }
+        });
+
+        if (!service) {
+            return res.status(404).json({ error: 'Service not found' });
+        }
+
+        const availableTime = await prisma.availableTime.findUnique({
+            where: { id: parseInt(timeId) }
+        });
+
+        if (!availableTime) {
+            return res.status(404).json({ error: 'Time slot not found' });
+        }
+
+        if (availableTime.isBooked) {
+            return res.status(400).json({ error: 'Time slot is already booked' });
+        }
+
+        const booking = await prisma.booking.create({
+            data: {
+                userId: req.user.id,
+                serviceId: parseInt(serviceId),
+                timeId: parseInt(timeId)
+            }
+        });
+
+        await prisma.availableTime.update({
+            where: { id: parseInt(timeId) },
+            data: { isBooked: true }
+        });
+
+        res.status(201).json({
+            message: 'Booking created successfully',
+            booking: booking
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error creating booking' });
     }
 });
 

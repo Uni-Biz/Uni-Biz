@@ -12,6 +12,8 @@ function Home() {
     const [newComment, setNewComment] = useState('');
     const [newRating, setNewRating] = useState(0);
     const [error, setError] = useState('');
+    const [availableTimes, setAvailableTimes] = useState([]);
+    const [showBookingModal, setShowBookingModal] = useState(false);
     const navigate = useNavigate();
     const ITEMS_PER_PAGE = 3;
 
@@ -87,6 +89,29 @@ function Home() {
             }
             const commentsData = await response.json();
             setComments(commentsData);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const fetchAvailableTimes = async (serviceId) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/services/${serviceId}/available-times`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch available times');
+            }
+            const timesData = await response.json();
+            setAvailableTimes(timesData);
         } catch (error) {
             console.error(error);
         }
@@ -177,6 +202,37 @@ function Home() {
         navigate('/login');
     };
 
+    const handleBookSlot = async (timeId) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/book-service`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ serviceId: selectedService.id, timeId }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to book slot');
+            }
+            alert('Booking successful');
+            setShowBookingModal(false);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleOpenBookingModal = async (service) => {
+        setSelectedService(service);
+        await fetchAvailableTimes(service.id);
+        setShowBookingModal(true);
+    };
+
     if (!user) {
         return <div>Loading...</div>;
     }
@@ -222,6 +278,11 @@ function Home() {
                                 <p>{service.description}</p>
                                 <p>${service.price.toFixed(2)}</p>
                                 <p>Average Rating: {service.averageRating || 'No ratings yet'}</p>
+                                {service.availableTimes && service.availableTimes.length > 0 && (
+                                    <button className="home-booking-button" onClick={(e) => { e.stopPropagation(); handleOpenBookingModal(service); }}>
+                                        Book Now
+                                    </button>
+                                )}
                                 <button className="home-favorite-button" onClick={(e) => { e.stopPropagation(); handleAddToFavorites(service.id); }}>Favorite</button>
                             </div>
                         ))}
@@ -231,8 +292,8 @@ function Home() {
                     <button className="home-load-more" onClick={handleLoadMore}>Load More</button>
                 )}
             </div>
-            {selectedService && (
-                <Modal isOpen={true} onClose={() => setSelectedService(null)}>
+            {selectedService && !showBookingModal && (
+                <Modal isOpen={true} onClose={() => { setSelectedService(null); }}>
                     <div className="service-details">
                         <h2>{selectedService.serviceName}</h2>
                         <p>{selectedService.serviceType}</p>
@@ -254,6 +315,26 @@ function Home() {
                             <input type="number" value={newRating} onChange={e => setNewRating(parseInt(e.target.value))} placeholder="Rate (1-5)" min="1" max="5" />
                             <button onClick={() => handleAddComment(selectedService.id)}>Submit Comment</button>
                         </div>
+                    </div>
+                </Modal>
+            )}
+            {showBookingModal && selectedService && (
+                <Modal isOpen={true} onClose={() => { setShowBookingModal(false); setSelectedService(null); setSelectedTime(null); }}>
+                    <div className="booking-details">
+                        <h2>Book a Slot for {selectedService.serviceName}</h2>
+                        {availableTimes.length > 0 ? (
+                            <ul>
+                                {availableTimes.map(time => (
+                                    <li key={time.id}>
+                                        <button onClick={() => handleBookSlot(time.id)}>
+                                            {new Date(time.startTime).toLocaleString()} - {new Date(time.endTime).toLocaleString()}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>No available times.</p>
+                        )}
                     </div>
                 </Modal>
             )}

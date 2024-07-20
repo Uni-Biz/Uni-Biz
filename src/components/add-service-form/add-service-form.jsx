@@ -1,5 +1,8 @@
-// add-service-form.jsx
 import React, { useState } from 'react';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
 import './add-service-form.css';
 
 const AddServiceForm = ({ onClose }) => {
@@ -8,8 +11,26 @@ const AddServiceForm = ({ onClose }) => {
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
     const [image, setImage] = useState(null);
+    const [availableTimes, setAvailableTimes] = useState([]);
     const [error, setError] = useState('');
     const serviceTypes = ['Hair', 'Clothes', 'Food', 'Cosmetic']; // Replace with actual service types
+
+    const handleDateSelect = (selectInfo) => {
+        let calendarApi = selectInfo.view.calendar;
+        calendarApi.unselect(); // clear date selection
+
+        const startTime = selectInfo.startStr;
+        const endTime = selectInfo.endStr;
+
+        setAvailableTimes([...availableTimes, { startTime, endTime }]);
+    };
+
+    const handleEventClick = (clickInfo) => {
+        if (window.confirm(`Are you sure you want to delete this event?`)) {
+            clickInfo.event.remove();
+            setAvailableTimes(availableTimes.filter(time => time.startTime !== clickInfo.event.startStr));
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,6 +42,9 @@ const AddServiceForm = ({ onClose }) => {
         formData.append('price', price);
         if (image) {
             formData.append('image', image);
+        }
+        if (availableTimes.length > 0) {
+            formData.append('availableTimes', JSON.stringify(availableTimes));
         }
 
         try {
@@ -76,6 +100,21 @@ const AddServiceForm = ({ onClose }) => {
                 Service Image:
                 <input type="file" onChange={(e) => setImage(e.target.files[0])} />
             </label>
+            <div>
+                <label>Available Times (Optional):</label>
+                <FullCalendar
+                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                    initialView="timeGridWeek"
+                    selectable={true}
+                    selectMirror={true}
+                    select={handleDateSelect}
+                    eventClick={handleEventClick}
+                    events={availableTimes.map(time => ({
+                        start: time.startTime,
+                        end: time.endTime
+                    }))}
+                />
+            </div>
             {error && <p className="error">{error}</p>}
             <button type="submit">Add Service</button>
         </form>
