@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -25,6 +19,7 @@ model User {
   reviews         ReviewAndRating[]   @relation("UserReviews")
   services        Service[]
   favorites       Favorite[]
+  bookings        Booking[]
 }
 
 model BusinessProfile {
@@ -47,6 +42,8 @@ model Service {
   user              User              @relation(fields: [userId], references: [id])
   reviewsAndRatings ReviewAndRating[] @relation("ServiceReviews")
   favoritedBy       Favorite[]
+  availableTimes    AvailableTime[]
+  bookings          Booking[]
 }
 
 model ReviewAndRating {
@@ -67,4 +64,25 @@ model Favorite {
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
   @@id([userId, serviceId])
+}
+
+model AvailableTime {
+  id        Int      @id @default(autoincrement())
+  serviceId Int
+  startTime DateTime
+  endTime   DateTime
+  isBooked  Boolean  @default(false)
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  bookings  Booking[]
+}
+
+model Booking {
+  id         Int          @id @default(autoincrement())
+  userId     Int
+  serviceId  Int
+  timeId     Int?
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service    Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  time       AvailableTime? @relation(fields: [timeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
 }
