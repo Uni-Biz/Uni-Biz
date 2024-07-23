@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../modal/modal.jsx';
 import Profile from '../user-profile/profile.jsx';
@@ -14,6 +15,7 @@ function Dashboard() {
     const [newRating, setNewRating] = useState(0);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(parseInt(localStorage.getItem('unreadCount')) || 0);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -40,6 +42,42 @@ function Dashboard() {
             }
         };
         fetchUserInfo();
+
+        const socket = io('http://localhost:4500', {
+            withCredentials: true,
+        });
+
+        socket.on('connect', () => {
+            console.log('Connected to WebSocket server');
+        });
+
+        socket.on('notification', (notification) => {
+            console.log('Received notification:', notification);
+            if (notification.userId === user?.id || notification.serviceCreatorId === user?.id) {
+                setNotifications((prevNotifications) => [...prevNotifications, notification]);
+                setUnreadCount((prevCount) => {
+                    const newCount = prevCount + 1;
+                    localStorage.setItem('unreadCount', newCount);
+                    return newCount;
+                });
+            }
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.log('WebSocket connection closed:', reason);
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('WebSocket connection error:', error);
+        });
+
+        socket.on('error', (error) => {
+            console.error('WebSocket error:', error);
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, [navigate]);
 
     useEffect(() => {
@@ -156,7 +194,7 @@ function Dashboard() {
             if (!response.ok) {
                 throw new Error('Failed to delete comment');
             }
-            fetchComments(serviceId); // Refresh comments after deletion
+            fetchComments(serviceId);
         } catch (error) {
             console.error(error);
         }
@@ -184,6 +222,31 @@ function Dashboard() {
                 throw new Error('Failed to add to favorites');
             }
             alert('Service added to favorites');
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleNotificationClick = async () => {
+        setUnreadCount(0);
+        localStorage.setItem('unreadCount', 0); // Reset unread count in local storage
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch notifications');
+            }
+            const notificationsData = await response.json();
+            navigate('/notifications', { state: { notifications: notificationsData } });
         } catch (error) {
             console.error(error);
         }
@@ -232,7 +295,10 @@ function Dashboard() {
                     <a href="#" className="active" onClick={() => navigate('/dashboard')}>Dashboard</a>
                     <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
                     <a href="#" onClick={() => navigate('/home')}>Home</a>
-                    <a href="#">Bookings</a>
+                    <a href="#" onClick={() => navigate('/bookings')}>Bookings</a>
+                    <a href="#" onClick={handleNotificationClick}>
+                        Notifications {unreadCount > 0 && <span className="notification-count">{unreadCount}</span>}
+                    </a>
                 </div>
             </div>
             <div className="dashboard-main-content">

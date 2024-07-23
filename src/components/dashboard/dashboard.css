@@ -5,21 +5,22 @@ body, html {
     width: 100%;
     overflow: hidden; /* Prevent scrolling on body */
     font-family: Arial, sans-serif;
+    background-color: #f0f0f0; /* Set background color */
 }
 
 .dashboard-dashboard {
     display: flex;
     height: 100%;
     width: 100%;
-    background-color: #ffffff;
+    background-color: #ffffff; /* Set background color */
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
 }
 
 .dashboard-sidebar {
     width: 250px;
-    background-color: #2d2d2d;
-    color: #ffffff;
+    background-color: #234a7c; /* Set background color to match login panel */
+    color: #ffffff; /* Set text color */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -33,8 +34,8 @@ body, html {
 }
 
 .dashboard-sidebar .dashboard-profile img {
-    width: 100px; /* Adjusted for mobile */
-    height: 100px; /* Adjusted for mobile */
+    width: 250px; /* Adjusted for mobile */
+    height: 250px; /* Adjusted for mobile */
     border-radius: 50%;
 }
 
@@ -49,17 +50,17 @@ body, html {
 .dashboard-sidebar .dashboard-menu a {
     display: block;
     padding: 10px 20px;
-    color: #ffffff;
+    color: #ffffff; /* Set text color */
     text-decoration: none;
     transition: background 0.3s;
 }
 
 .dashboard-sidebar .dashboard-menu a:hover {
-    background-color: #1d1d1d;
+    background-color: #1d1d1d; /* Set hover background color */
 }
 
 .dashboard-sidebar .dashboard-menu a.active {
-    background-color: #1d1d1d;
+    background-color: #1d1d1d; /* Set active link background color */
 }
 
 .dashboard-main-content {
@@ -111,7 +112,13 @@ body, html {
 }
 
 .dashboard-buttons {
-    background-color: aqua;
+    background-color: #234a7c; /* Match button background color */
+    color: #ffffff; /* Match button text color */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 16px;
 }
 
 @media (min-width: 768px) {

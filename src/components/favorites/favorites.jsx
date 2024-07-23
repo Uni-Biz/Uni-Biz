@@ -188,7 +188,8 @@ function Favorites() {
                     <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
                     <a href="#" className="active">Favorites</a>
                     <a href="#" onClick={() => navigate('/home')}>Home</a>
-                    <a href="#">Bookings</a>
+                    <a href="#" onClick={() => navigate('/bookings')}>Bookings</a>
+                    <a href="#" onClick={() => navigate('/notifications')}>Notifications</a>
                 </div>
             </div>
             <div className="favorites-main-content">

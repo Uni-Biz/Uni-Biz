@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import Modal from '../modal/modal.jsx';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
 import './home.css';
 
 function Home() {
@@ -14,6 +19,9 @@ function Home() {
     const [error, setError] = useState('');
     const [availableTimes, setAvailableTimes] = useState([]);
     const [showBookingModal, setShowBookingModal] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(parseInt(localStorage.getItem('unreadCount')) || 0); // Initialize from local storage
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const ITEMS_PER_PAGE = 3;
 
@@ -41,7 +49,43 @@ function Home() {
             }
         };
         fetchUserInfo();
-    }, [navigate]);
+
+        const socket = io('http://localhost:4500', {
+            withCredentials: true,
+        });
+
+        socket.on('connect', () => {
+            console.log('Connected to WebSocket server');
+        });
+
+        socket.on('notification', (notification) => {
+            console.log('Received notification:', notification);
+            if (notification.userId === user?.id || notification.serviceCreatorId === user?.id) {
+                setNotifications((prevNotifications) => [...prevNotifications, notification]);
+                setUnreadCount((prevCount) => {
+                    const newCount = prevCount + 1;
+                    localStorage.setItem('unreadCount', newCount);
+                    return newCount;
+                });
+            }
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.log('WebSocket connection closed:', reason);
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('WebSocket connection error:', error);
+        });
+
+        socket.on('error', (error) => {
+            console.error('WebSocket error:', error);
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
 
     useEffect(() => {
         fetchServices();
@@ -68,6 +112,8 @@ function Home() {
             setVisibleServices(servicesData.slice(0, ITEMS_PER_PAGE));
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -159,7 +205,7 @@ function Home() {
             if (!response.ok) {
                 throw new Error('Failed to delete comment');
             }
-            fetchComments(serviceId); // Refresh comments after deletion
+            fetchComments(serviceId);
         } catch (error) {
             console.error(error);
         }
@@ -221,7 +267,7 @@ function Home() {
                 throw new Error('Failed to book slot');
             }
             alert('Booking successful');
-            setShowBookingModal(false);
+            setAvailableTimes(availableTimes.filter(time => time.id !== timeId));
         } catch (error) {
             console.error(error);
         }
@@ -233,8 +279,33 @@ function Home() {
         setShowBookingModal(true);
     };
 
+    const handleNotificationClick = async () => {
+        setUnreadCount(0);
+        localStorage.setItem('unreadCount', 0); // Reset unread count in local storage
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch notifications');
+            }
+            const notificationsData = await response.json();
+            navigate('/notifications', { state: { notifications: notificationsData } });
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     if (!user) {
-        return <div>Loading...</div>;
+        return <div className="loading-spinner"></div>;
     }
 
     const profile = user.profile;
@@ -253,8 +324,12 @@ function Home() {
                     <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
                     <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
                     <a href="#" className="active">Home</a>
-                    <a href="#">Bookings</a>
+                    <a href="#" onClick={() => navigate('/bookings')}>Bookings</a>
+                    <a href="#" onClick={handleNotificationClick}>
+                        Notifications {unreadCount > 0 && <span className="notification-count">{unreadCount}</span>}
+                    </a>
                 </div>
+                <button className="logout-button" onClick={handleLogout}>Log Out</button>
             </div>
             <div className="home-main-content">
                 <div className="home-header">
@@ -263,33 +338,39 @@ function Home() {
                         <button onClick={handleLogout}>Log Out</button>
                     </div>
                 </div>
-                {services.length === 0 ? (
-                    <div className="no-recommendations">
-                        <p>No services available yet.</p>
-                    </div>
+                {loading ? (
+                    <div className="loading-spinner"></div>
                 ) : (
-                    <div className="home-cards">
-                        {visibleServices.map(service => (
-                            <div key={service.id} className="home-card" onClick={() => handleServiceClick(service)}>
-                                <img src={`data:image/png;base64,${service.image}`} alt="Service" />
-                                <h2>{service.serviceName}</h2>
-                                <p>{service.serviceType}</p>
-                                <p>{service.businessName}</p>
-                                <p>{service.description}</p>
-                                <p>${service.price.toFixed(2)}</p>
-                                <p>Average Rating: {service.averageRating || 'No ratings yet'}</p>
-                                {service.availableTimes && service.availableTimes.length > 0 && (
-                                    <button className="home-booking-button" onClick={(e) => { e.stopPropagation(); handleOpenBookingModal(service); }}>
-                                        Book Now
-                                    </button>
-                                )}
-                                <button className="home-favorite-button" onClick={(e) => { e.stopPropagation(); handleAddToFavorites(service.id); }}>Favorite</button>
+                    <>
+                        {services.length === 0 ? (
+                            <div className="no-recommendations">
+                                <p>No services available yet.</p>
                             </div>
-                        ))}
-                    </div>
-                )}
-                {visibleServices.length < services.length && (
-                    <button className="home-load-more" onClick={handleLoadMore}>Load More</button>
+                        ) : (
+                            <div className="home-cards">
+                                {visibleServices.map(service => (
+                                    <div key={service.id} className="home-card" onClick={() => handleServiceClick(service)}>
+                                        <img src={`data:image/png;base64,${service.image}`} alt="Service" />
+                                        <h2>{service.serviceName}</h2>
+                                        <p>{service.serviceType}</p>
+                                        <p>{service.businessName}</p>
+                                        <p>{service.description}</p>
+                                        <p>${service.price.toFixed(2)}</p>
+                                        <p>Average Rating: {service.averageRating || 'No ratings yet'}</p>
+                                        {service.availableTimes && service.availableTimes.length > 0 && (
+                                            <button className="home-booking-button" onClick={(e) => { e.stopPropagation(); handleOpenBookingModal(service); }}>
+                                                Book Now
+                                            </button>
+                                        )}
+                                        <button className="home-favorite-button" onClick={(e) => { e.stopPropagation(); handleAddToFavorites(service.id); }}>Favorite</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {visibleServices.length < services.length && (
+                            <button className="home-load-more" onClick={handleLoadMore}>Load More</button>
+                        )}
+                    </>
                 )}
             </div>
             {selectedService && !showBookingModal && (
@@ -319,22 +400,27 @@ function Home() {
                 </Modal>
             )}
             {showBookingModal && selectedService && (
-                <Modal isOpen={true} onClose={() => { setShowBookingModal(false); setSelectedService(null); setSelectedTime(null); }}>
+                <Modal isOpen={true} onClose={() => { setShowBookingModal(false); setSelectedService(null); }}>
                     <div className="booking-details">
                         <h2>Book a Slot for {selectedService.serviceName}</h2>
-                        {availableTimes.length > 0 ? (
-                            <ul>
-                                {availableTimes.map(time => (
-                                    <li key={time.id}>
-                                        <button onClick={() => handleBookSlot(time.id)}>
-                                            {new Date(time.startTime).toLocaleString()} - {new Date(time.endTime).toLocaleString()}
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p>No available times.</p>
-                        )}
+                        <FullCalendar
+                            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                            initialView="timeGridWeek"
+                            selectable={false}
+                            events={availableTimes.map(time => ({
+                                start: time.startTime,
+                                end: time.endTime,
+                                title: time.isBooked ? 'Booked' : 'Available',
+                                id: time.id,
+                                backgroundColor: time.isBooked ? 'red' : 'green',
+                            }))}
+                            eventClick={({ event }) => {
+                                if (!event.extendedProps.isBooked) {
+                                    handleBookSlot(event.id);
+                                }
+                            }}
+                        />
+                        {availableTimes.length === 0 && <p>No available times.</p>}
                     </div>
                 </Modal>
             )}

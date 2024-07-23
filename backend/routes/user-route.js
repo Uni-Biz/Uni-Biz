@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
+const { sendNotification } = require('../websocketServer');
 const { calculateRecommendedServices } = require('./recommendationHelpers');
 const {applyTimeDecay} = require('./recommendationHelpers')
 const {getMatrix} = require('./recommendationHelpers')
@@ -538,7 +539,8 @@ router.post('/book-service', authenticateJWT, async (req, res) => {
         const { serviceId, timeId } = req.body;
 
         const service = await prisma.service.findUnique({
-            where: { id: parseInt(serviceId) }
+            where: { id: parseInt(serviceId) },
+            include: { user: true } // Include the user who offers the service
         });
 
         if (!service) {
@@ -570,6 +572,39 @@ router.post('/book-service', authenticateJWT, async (req, res) => {
             data: { isBooked: true }
         });
 
+        const notificationContentForUser = `You booked ${service.serviceName} with ${service.user.username} for ${new Date(availableTime.startTime).toLocaleString()}`;
+        const notificationContentForServiceProvider = `${req.user.username} booked ${service.serviceName} with you for ${new Date(availableTime.startTime).toLocaleString()}`;
+
+        // Create notification for the user who booked the service
+        await prisma.notification.create({
+            data: {
+                content: notificationContentForUser,
+                userId: req.user.id,
+                serviceId: service.id
+            }
+        });
+
+        // Create notification for the user who offers the service
+        await prisma.notification.create({
+            data: {
+                content: notificationContentForServiceProvider,
+                userId: service.user.id,
+                serviceId: service.id
+            }
+        });
+
+        const bookingDetails = {
+            userId: req.user.id,
+            serviceId: service.id,
+            timeId: availableTime.id,
+            userName: req.user.username,
+            serviceName: service.serviceName,
+            businessName: service.user.username,
+            bookingTime: new Date().toISOString(),
+        };
+
+        sendNotification(bookingDetails);
+
         res.status(201).json({
             message: 'Booking created successfully',
             booking: booking
@@ -577,6 +612,61 @@ router.post('/book-service', authenticateJWT, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error creating booking' });
+    }
+});
+
+router.get('/bookings', authenticateJWT, async (req, res) => {
+    try {
+        const bookings = await prisma.booking.findMany({
+            where: { userId: req.user.id },
+            include: {
+                service: true,
+                time: true,
+            },
+        });
+        res.status(200).json(bookings);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching bookings' });
+    }
+});
+
+router.get('/offered-bookings', authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Fetch bookings where the services are offered by the logged-in user
+        const offeredBookings = await prisma.booking.findMany({
+            where: {
+                service: {
+                    userId: userId
+                }
+            },
+            include: {
+                service: true,
+                time: true,
+                user: true // Assuming you want details of the user who booked the service
+            }
+        });
+
+        res.status(200).json(offeredBookings);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching offered bookings' });
+    }
+});
+
+router.get('/notifications', authenticateJWT, async (req, res) => {
+    try {
+        const notifications = await prisma.notification.findMany({
+            where: { userId: req.user.id },
+            orderBy: { timestamp: 'desc' }
+        });
+
+        res.status(200).json(notifications);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching notifications' });
     }
 });
 

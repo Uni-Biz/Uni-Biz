@@ -89,6 +89,31 @@ body, html {
     padding: 10px; /* Optional: Add some padding for better aesthetics */
 }
 
+.loading-spinner {
+    border: 16px solid #f3f3f3;
+    border-top: 16px solid #3498db;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    margin: 0 auto;
+    display: block;
+    margin-top: 50px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.notification-count {
+    background-color: red;
+    color: white;
+    padding: 0 5px;
+    border-radius: 50%;
+    margin-left: 5px;
+}
+
 .home-card {
     background-color: white;
     padding: 20px;
