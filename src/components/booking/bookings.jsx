@@ -77,11 +77,36 @@ const Bookings = () => {
         navigate('/login');
     };
 
+    const syncGoogleCalendar = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/auth-url`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to sync Google Calendar');
+            }
+            const data = await response.json();
+            window.location.href = data.url;
+        } catch (error) {
+            console.error(error);
+            alert('Failed to sync Google Calendar');
+        }
+    };
+
     return (
         <div className="bookings">
             <Sidebar />
             <div className="bookings-main-content">
                 <h1>Your Bookings</h1>
+                <button onClick={syncGoogleCalendar}>Sync Google Calendar</button>
                 <FullCalendar
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                     initialView="timeGridWeek"

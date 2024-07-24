@@ -14,6 +14,9 @@ model User {
   email           String
   username        String              @unique
   password        String
+  accessToken     String?
+  refreshToken    String?
+  tokenExpiry     DateTime?
   profileComplete Boolean             @default(false)
   profile         BusinessProfile?
   reviews         ReviewAndRating[]   @relation("UserReviews")
@@ -21,6 +24,7 @@ model User {
   favorites       Favorite[]
   bookings        Booking[]
   notifications Notification[]  // Relation to Notification
+  googleCalendarEvents GoogleCalendar[]
   unreadCount Int     @default(0)
 }
 
@@ -88,6 +92,17 @@ model Booking {
   service    Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   time       AvailableTime? @relation(fields: [timeId], references: [id], onDelete: Cascade)
   createdAt  DateTime     @default(now())
+}
+
+model GoogleCalendar {
+  id        Int      @id @default(autoincrement())
+  googleId  String   @unique
+  title     String
+  startAt   DateTime
+  endAt     DateTime
+  allDay    Boolean
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Notification {

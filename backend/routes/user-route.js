@@ -14,6 +14,9 @@ const authenticateJWT  = require("../middlewares/authenticateJWT");
 const multer = require('multer');
 const { get } = require('https');
 
+const { oauth2Client, SCOPES } = require('../middlewares/GoogleOAuthConfig');
+const {google} = require('googleapis');
+
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -759,9 +762,116 @@ router.post('/notifications/update-unread-count', authenticateJWT, async (req, r
     }
 });
 
+router.get('/auth-url', (req, res) => {
+    const url = oauth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: SCOPES,
+    });
+    res.json({ url }); // Send URL back to client
+});
 
+// API Endpoint to Start the OAuth flow
+router.get('/google-calendar', (req, res) => {
+    const url = oauth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: SCOPES,
+    });
+    res.redirect(url);
+});
 
+// API Endpoint for Callback to Exchange Authorization code for Access Token
+router.post('/google-calendar/callback', authenticateJWT, async (req, res) => {
+    const { code } = req.body; // Get code from the body instead of query
+    try {
+        const { tokens } = await oauth2Client.getToken(code);
+        oauth2Client.setCredentials(tokens);
+        await prisma.user.update({
+            where: { id: req.user.id},
+            data: {
+                accessToken: tokens.access_token,
+                refreshToken: tokens.refresh_token,
+                tokenExpiry: new Date(tokens.expiry_date),
+            },
+        });
+        res.json({ message: 'Authentication successful', tokens });
+    } catch (error) {
+        console.error('Error retrieving access token', error);
+        res.status(500).send('Error retrieving access token');
+    }
+});
 
+// API Endpoint for Fetching & Syncing Google Calendar Events
+router.get('/google-calendar/sync', authenticateJWT, async (req, res) => {
+    const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+    });
 
+    if (!user || !user.accessToken || !user.refreshToken) {
+        return res.status(401).send('Not authenticated with Google');
+    }
+
+    oauth2Client.setCredentials({
+        access_token: user.accessToken,
+        refresh_token: user.refreshToken,
+        expiry_date: user.tokenExpiry.getTime(),
+    });
+
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    try {
+        // Fetches list of Calendar Events from Google Calendar API
+        const events = await calendar.events.list({
+            calendarId: 'primary',
+            timeMin: new Date().toISOString(),
+            maxResults: 2500,
+            singleEvents: true,
+            orderBy: 'startTime',
+        });
+
+        // Stores fetched Google Calendar Events into Database
+        const parsedEvents = events.data.items.map(event => ({
+            title: event.summary || 'Untitled Event',
+            startAt: new Date(event.start.dateTime || event.start.date),
+            endAt: new Date(event.end.dateTime || event.end.date),
+            allDay: Boolean(!event.start.dateTime && !event.end.dateTime && event.start.date && event.end.date),
+            userId: 1,
+            googleId: event.id
+        }));
+
+        // Creates/Updates the Google Calendar Events into Database via Prisma
+        for (const event of parsedEvents) {
+            try {
+                await prisma.googleCalendar.upsert({
+                    where: { googleId: event.googleId },
+                    update: {
+                        title: event.title,
+                        startAt: event.startAt,
+                        endAt: event.endAt,
+                        allDay: event.allDay,
+                    },
+                    create: {
+                        googleId: event.googleId,
+                        title: event.title,
+                        startAt: event.startAt,
+                        endAt: event.endAt,
+                        allDay: event.allDay,
+                        user: {
+                            connect: {
+                                id: 1
+                            }
+                        },
+                    }
+                });
+            } catch (error) {
+                console.error(`Error processing event ${event.googleId}:`, error);
+            }
+        }
+
+        res.json({ message: 'Done Syncing Calendar Events'});
+
+    } catch (error) {
+        console.error('Error syncing Google Calendar events', error);
+        res.status(500).json({ error: 'Failed to sync Google Calendar events' });
+    }
+})
 
 module.exports = router;

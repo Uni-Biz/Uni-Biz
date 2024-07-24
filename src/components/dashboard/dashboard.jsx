@@ -259,30 +259,34 @@ function Dashboard() {
 
     return (
         <div className="dashboard-dashboard">
-            <Sidebar />
-            <div className="dashboard-main-content">
-                <div className="dashboard-header">
-                    <h1>Welcome, {user.first_name} {user.last_name}</h1>
-                    <div className="actions">
-                        <button onClick={handleAddService}>Add Service</button>
+            <span>
+                <Sidebar />
+            </span>
+            <span>
+                <div className="dashboard-main-content">
+                    <div className="dashboard-header">
+                        <h1>Welcome, {user.first_name} {user.last_name}</h1>
+                        <div className="actions">
+                            <button onClick={handleAddService}>Add Service</button>
+                        </div>
+                    </div>
+                    <div className="dashboard-cards">
+                        {services.map(service => (
+                            <div key={service.id} className="dashboard-card" onClick={() => handleServiceClick(service)}>
+                                <img src={`data:image/png;base64,${service.image}`} alt="Service" />
+                                <h2>{service.serviceName}</h2>
+                                <p>{service.serviceType}</p>
+                                <p>{service.businessName}</p>
+                                <p>{service.description}</p>
+                                <p>${service.price.toFixed(2)}</p>
+                                <p>Average Rating: {service.averageRating || 'No ratings yet'}</p>
+                                <button className="delete-button" onClick={(e) => { e.stopPropagation(); handleDeleteService(service.id); }}>Delete</button>
+                                <button className="favorite-button" onClick={(e) => { e.stopPropagation(); handleAddToFavorites(service.id); }}>Favorite</button>
+                            </div>
+                        ))}
                     </div>
                 </div>
-                <div className="dashboard-cards">
-                    {services.map(service => (
-                        <div key={service.id} className="dashboard-card" onClick={() => handleServiceClick(service)}>
-                            <img src={`data:image/png;base64,${service.image}`} alt="Service" />
-                            <h2>{service.serviceName}</h2>
-                            <p>{service.serviceType}</p>
-                            <p>{service.businessName}</p>
-                            <p>{service.description}</p>
-                            <p>${service.price.toFixed(2)}</p>
-                            <p>Average Rating: {service.averageRating || 'No ratings yet'}</p>
-                            <button className="delete-button" onClick={(e) => { e.stopPropagation(); handleDeleteService(service.id); }}>Delete</button>
-                            <button className="favorite-button" onClick={(e) => { e.stopPropagation(); handleAddToFavorites(service.id); }}>Favorite</button>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            </span>
             <Modal isOpen={isProfileModalOpen} onClose={handleCloseProfileModal}>
                 <Profile onClose={handleCloseProfileModal} />
             </Modal>
