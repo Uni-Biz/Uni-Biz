@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import Modal from '../modal/modal.jsx';
 import './favorites.css';
+import Sidebar from '../sidebar/Sidebar.jsx';
 
 function Favorites() {
     const [user, setUser] = useState(null);
@@ -11,6 +13,11 @@ function Favorites() {
     const [newComment, setNewComment] = useState('');
     const [newRating, setNewRating] = useState(0);
     const navigate = useNavigate();
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(() => {
+        const storedCount = localStorage.getItem('unreadCount') || '0';
+        return parseInt(storedCount);
+    });
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -36,6 +43,45 @@ function Favorites() {
             }
         };
         fetchUserInfo();
+
+        // const socket = io('http://localhost:4500', {
+        //     withCredentials: true,
+        // });
+
+        // socket.on('connect', () => {
+        //     console.log('Connected to WebSocket server');
+        // });
+
+        // socket.on('notification', (notification) => {
+        //     console.log('Received notification:', notification);
+        //     if (notification.userId === user?.id || notification.serviceCreatorId === user?.id) {
+        //         setNotifications((prevNotifications) => [...prevNotifications, notification]);
+        //         setUnreadCount((prevCount) => {
+        //             const newCount = prevCount + 1;
+        //             localStorage.setItem(`unreadCount_${user?.id}`, newCount);
+        //             return newCount;
+        //         });
+        //         console.log(notification.userId)
+        //         console.log(notification.serviceCreatorId)
+        //     }
+        // });
+
+        // socket.on('disconnect', (reason) => {
+        //     console.log('WebSocket connection closed:', reason);
+        // });
+
+        // socket.on('connect_error', (error) => {
+        //     console.error('WebSocket connection error:', error);
+        // });
+
+        // socket.on('error', (error) => {
+        //     console.error('WebSocket error:', error);
+        // });
+
+        // return () => {
+        //     socket.disconnect();
+        // };
+
     }, [navigate]);
 
     useEffect(() => {
@@ -168,6 +214,31 @@ function Favorites() {
         navigate('/login');
     };
 
+    const handleNotificationClick = async () => {
+        setUnreadCount(0);
+        localStorage.setItem(`unreadCount_${user?.id}`, '0'); // Reset unread count in local storage
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch notifications');
+            }
+            const notificationsData = await response.json();
+            navigate('/notifications', { state: { notifications: notificationsData } });
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     if (!user) {
         return <div>Loading...</div>;
     }
@@ -176,22 +247,7 @@ function Favorites() {
 
     return (
         <div className="favorites-page">
-            <div className="favorites-sidebar">
-                <div className="favorites-profile">
-                    <div className="profile-pic">
-                        <img src={`data:image/png;base64,${profile.logo}`} alt="Profile Logo" />
-                    </div>
-                    <h3>{profile.businessName}</h3>
-                    <button className="favorites-buttons" onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
-                </div>
-                <div className="favorites-menu">
-                    <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
-                    <a href="#" className="active">Favorites</a>
-                    <a href="#" onClick={() => navigate('/home')}>Home</a>
-                    <a href="#" onClick={() => navigate('/bookings')}>Bookings</a>
-                    <a href="#" onClick={() => navigate('/notifications')}>Notifications</a>
-                </div>
-            </div>
+            <Sidebar />
             <div className="favorites-main-content">
                 <div className="favorites-header">
                     <h1>Your Favorite Services</h1>

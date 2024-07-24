@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../modal/modal.jsx';
 import Profile from '../user-profile/profile.jsx';
 import AddServiceForm from '../add-service-form/add-service-form.jsx';
 import './dashboard.css';
+import Sidebar from '../sidebar/Sidebar.jsx';
 
 function Dashboard() {
     const [user, setUser] = useState(null);
@@ -15,7 +15,7 @@ function Dashboard() {
     const [newRating, setNewRating] = useState(0);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(parseInt(localStorage.getItem('unreadCount')) || 0);
+    const [unreadCount, setUnreadCount] = useState(0);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -37,47 +37,20 @@ function Dashboard() {
                 }
                 const userData = await response.json();
                 setUser(userData);
+
+                const unreadCountResponse = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications/unread-count`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                const { unreadCount } = await unreadCountResponse.json();
+                setUnreadCount(unreadCount);
             } catch (error) {
                 console.error(error);
             }
         };
         fetchUserInfo();
-
-        const socket = io('http://localhost:4500', {
-            withCredentials: true,
-        });
-
-        socket.on('connect', () => {
-            console.log('Connected to WebSocket server');
-        });
-
-        socket.on('notification', (notification) => {
-            console.log('Received notification:', notification);
-            if (notification.userId === user?.id || notification.serviceCreatorId === user?.id) {
-                setNotifications((prevNotifications) => [...prevNotifications, notification]);
-                setUnreadCount((prevCount) => {
-                    const newCount = prevCount + 1;
-                    localStorage.setItem('unreadCount', newCount);
-                    return newCount;
-                });
-            }
-        });
-
-        socket.on('disconnect', (reason) => {
-            console.log('WebSocket connection closed:', reason);
-        });
-
-        socket.on('connect_error', (error) => {
-            console.error('WebSocket connection error:', error);
-        });
-
-        socket.on('error', (error) => {
-            console.error('WebSocket error:', error);
-        });
-
-        return () => {
-            socket.disconnect();
-        };
     }, [navigate]);
 
     useEffect(() => {
@@ -229,13 +202,18 @@ function Dashboard() {
 
     const handleNotificationClick = async () => {
         setUnreadCount(0);
-        localStorage.setItem('unreadCount', 0); // Reset unread count in local storage
         try {
             const token = localStorage.getItem('token');
             if (!token) {
                 navigate('/login');
                 return;
             }
+            await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications/reset-unread-count`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
             const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications`, {
                 method: 'GET',
                 headers: {
@@ -246,6 +224,7 @@ function Dashboard() {
                 throw new Error('Failed to fetch notifications');
             }
             const notificationsData = await response.json();
+            setNotifications(notificationsData);
             navigate('/notifications', { state: { notifications: notificationsData } });
         } catch (error) {
             console.error(error);
@@ -278,34 +257,13 @@ function Dashboard() {
         return <div>Loading...</div>;
     }
 
-    const profile = user.profile;
-
     return (
         <div className="dashboard-dashboard">
-            <div className="dashboard-sidebar">
-                <div className="dashboard-profile">
-                    <div className="profile-pic">
-                        <img src={`data:image/png;base64,${profile.logo}`} alt="Profile Logo" />
-                    </div>
-                    <h3>{profile.businessName}</h3>
-                    <button className="dashboard-buttons" onClick={handleEditProfile}>Edit Profile</button>
-                    <button className="dashboard-buttons">Delete Profile</button>
-                </div>
-                <div className="dashboard-menu">
-                    <a href="#" className="active" onClick={() => navigate('/dashboard')}>Dashboard</a>
-                    <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
-                    <a href="#" onClick={() => navigate('/home')}>Home</a>
-                    <a href="#" onClick={() => navigate('/bookings')}>Bookings</a>
-                    <a href="#" onClick={handleNotificationClick}>
-                        Notifications {unreadCount > 0 && <span className="notification-count">{unreadCount}</span>}
-                    </a>
-                </div>
-            </div>
+            <Sidebar />
             <div className="dashboard-main-content">
                 <div className="dashboard-header">
                     <h1>Welcome, {user.first_name} {user.last_name}</h1>
                     <div className="actions">
-                        <button onClick={handleLogout}>Log Out</button>
                         <button onClick={handleAddService}>Add Service</button>
                     </div>
                 </div>

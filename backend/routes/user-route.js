@@ -93,7 +93,7 @@ router.post('/verify-email', async (req, res) => {
 router.get("/info", authenticateJWT, async (req, res) => {
     try {
         const userInfo = await prisma.user.findUnique({
-            where: { username: req.user.username },
+            where: { id: req.user.id },
             include: { profile: true },
         });
 
@@ -584,12 +584,32 @@ router.post('/book-service', authenticateJWT, async (req, res) => {
             }
         });
 
+        // Increment unread count for the user who booked the service
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: {
+                unreadCount: {
+                    increment: 1
+                }
+            }
+        });
+
         // Create notification for the user who offers the service
         await prisma.notification.create({
             data: {
                 content: notificationContentForServiceProvider,
                 userId: service.user.id,
                 serviceId: service.id
+            }
+        });
+
+        // Increment unread count for the user who offers the service
+        await prisma.user.update({
+            where: { id: service.user.id },
+            data: {
+                unreadCount: {
+                    increment: 1
+                }
             }
         });
 
@@ -601,6 +621,7 @@ router.post('/book-service', authenticateJWT, async (req, res) => {
             serviceName: service.serviceName,
             businessName: service.user.username,
             bookingTime: new Date().toISOString(),
+            serviceCreatorId: service.userId
         };
 
         sendNotification(bookingDetails);
@@ -614,6 +635,7 @@ router.post('/book-service', authenticateJWT, async (req, res) => {
         res.status(500).json({ error: 'Error creating booking' });
     }
 });
+
 
 router.get('/bookings', authenticateJWT, async (req, res) => {
     try {
@@ -656,18 +678,124 @@ router.get('/offered-bookings', authenticateJWT, async (req, res) => {
     }
 });
 
+router.post('/create-notification', authenticateJWT, async (req, res) => {
+    const { content, userId } = req.body;
+
+    try {
+        await prisma.notification.create({
+            data: {
+                content,
+                userId,
+            }
+        });
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { unreadCount: { increment: 1 } }
+        });
+
+        res.status(201).json({ message: 'Notification created successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error creating notification' });
+    }
+});
+
 router.get('/notifications', authenticateJWT, async (req, res) => {
     try {
         const notifications = await prisma.notification.findMany({
             where: { userId: req.user.id },
             orderBy: { timestamp: 'desc' }
         });
-
         res.status(200).json(notifications);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error fetching notifications' });
     }
 });
+
+router.get('/notifications/unread-count', authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { unreadCount: true }
+        });
+        res.status(200).json({ unreadCount: user.unreadCount });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching unread count' });
+    }
+});
+
+
+router.post('/notifications/reset-unread-count', authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        await prisma.user.update({
+            where: { id: userId },
+            data: { unreadCount: 0 }
+        });
+        res.status(200).json({ message: 'Unread count reset successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error resetting unread count' });
+    }
+});
+
+
+router.post('/notifications/update-unread-count', authenticateJWT, async (req, res) => {
+    try {
+        const { unreadCount } = req.body;
+        const userId = req.user.id;
+        await prisma.user.update({
+            where: { id: userId },
+            data: { unreadCount }
+        });
+        res.status(200).json({ message: 'Unread count updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error updating unread count' });
+    }
+});
+
+
+
+// router.delete('/notifications/:id', authenticateJWT, async (req, res) => {
+//     const { id } = req.params;
+//     const userId = req.user.id;
+
+//     console.log(`Received DELETE request for notification ID: ${id} by user ID: ${userId}`);
+
+//     try {
+//         const notification = await prisma.notification.findUnique({
+//             where: { id: parseInt(id) }
+//         });
+
+//         console.log(`Fetched notification:`, notification);
+
+//         if (!notification) {
+//             console.log('Notification not found');
+//             return res.status(404).json({ error: 'Notification not found' });
+//         }
+
+//         if (notification.userId !== userId) {
+//             console.log(`User ID mismatch: notification.userId (${notification.userId}) !== userId (${userId})`);
+//             return res.status(404).json({ error: 'Notification not authorized' });
+//         }
+
+//         await prisma.notification.delete({
+//             where: { id: parseInt(id) }
+//         });
+
+//         console.log(`Notification ID: ${id} deleted successfully`);
+
+//         res.status(200).json({ message: 'Notification deleted successfully' });
+//     } catch (error) {
+//         console.error('Error deleting notification:', error);
+//         res.status(500).json({ error: 'Error deleting notification' });
+//     }
+// });
+
 
 module.exports = router;

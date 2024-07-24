@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 import './profile.css';
 
 function Profile({ onClose }) {
@@ -7,6 +8,8 @@ function Profile({ onClose }) {
     const [bio, setBio] = useState('');
     const [error, setError] = useState('');
     const [isEdit, setIsEdit] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false); // Track submission status
+    const navigate = useNavigate(); // Initialize useNavigate
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -84,7 +87,7 @@ function Profile({ onClose }) {
 
             const data = await response.json();
             if (response.ok) {
-                onClose();
+                setIsSubmitted(true); // Set submission status to true
             } else {
                 setError(data.error || 'Unknown error occurred');
             }
@@ -92,6 +95,10 @@ function Profile({ onClose }) {
             setError('Operation failed. Please try again.');
             console.error(error);
         }
+    };
+
+    const handleDashboardRedirect = () => {
+        navigate('/dashboard'); // Redirect to the dashboard
     };
 
     return (
@@ -123,6 +130,11 @@ function Profile({ onClose }) {
                     </div>
                     <button type="submit">{isEdit ? 'Update Profile' : 'Create Profile'}</button>
                 </form>
+                {isSubmitted && (
+                    <button onClick={handleDashboardRedirect} className="dashboard-button">
+                        Go to Dashboard
+                    </button>
+                )}
             </div>
         </div>
     );

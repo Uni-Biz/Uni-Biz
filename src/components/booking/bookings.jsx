@@ -6,6 +6,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import Modal from '../modal/modal.jsx';
 import './bookings.css';
+import Sidebar from '../sidebar/Sidebar.jsx';
 
 const Bookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -78,23 +79,7 @@ const Bookings = () => {
 
     return (
         <div className="bookings">
-            <div className="bookings-sidebar">
-                <div className="home-profile">
-                    <div className="profile-pic">
-                        {/* <img src={`data:image/png;base64,${user.profile.logo}`} alt="Profile Logo" /> */}
-                    </div>
-                    {/* <h3>{user.profile.businessName}</h3> */}
-                    <button className="home-buttons" onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
-                </div>
-                <div className="home-menu">
-                    <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
-                    <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
-                    <a href="#" onClick={() => navigate('/home')}>Home</a>
-                    <a href="#" className="active" onClick={() => navigate('/bookings')}>Bookings</a>
-                    <a href="#" onClick={() => navigate('/notifications')}>Notifications</a>
-                </div>
-                <button className="logout-button" onClick={handleLogout}>Log Out</button>
-            </div>
+            <Sidebar />
             <div className="bookings-main-content">
                 <h1>Your Bookings</h1>
                 <FullCalendar

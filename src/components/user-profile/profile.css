@@ -5,39 +5,96 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh;
     background-color: #f0f0f0;
+    overflow: hidden; /* Prevent body overflow */
 }
 
 .profile-container {
-    width: auto;
-    max-width: 600px;
+    display: flex;
+    width: 80%;
+    max-width: 1200px;
+    max-height: 90vh; /* Limit the container height */
     background-color: #ffffff;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
     margin: 20px;
     box-sizing: border-box;
-    overflow: auto;
+    overflow: hidden; /* Ensure container doesn't overflow */
 }
 
 .profile-form-container {
-    padding: 40px;
+    padding: 20px;
+    overflow-y: auto; /* Enable vertical scrolling for the form container */
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
     box-sizing: border-box;
 }
 
-/* ... rest of the CSS remains the same ... */
+h1 {
+    margin-top: 0;
+    text-align: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+form .form-group {
+    margin-bottom: 15px;
+}
+
+form .form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+form .form-group input,
+form .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+form button {
+    padding: 10px;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #234a7c;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.error {
+    color: red;
+    margin-bottom: 15px;
+    text-align: center;
+}
 
 @media (max-width: 768px) {
     body {
-        height: auto;
+        overflow: auto; /* Enable body scrolling on small screens */
     }
+
     .profile-container {
-        width: 90%;
-        max-width: none;
-        padding: 20px;
+        width: 100%;
+        height: auto; /* Allow height to adjust based on content */
+        max-height: none; /* Remove height limit */
+        margin: 0;
+        overflow-y: auto; /* Enable vertical scrolling for container */
     }
-    /* ... rest of the media query remains the same ... */
+
+    .profile-form-container {
+        padding: 20px;
+        flex: 1 1 100%; /* Ensure form container takes full width on small screens */
+    }
 }

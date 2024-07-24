@@ -71,13 +71,18 @@ body, html {
 
 .dashboard-header {
     display: flex;
-    flex-direction: column; /* Adjusted for mobile */
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
 }
 
 .dashboard-header h1 {
     margin: 0;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
 }
 
 .dashboard-cards {
@@ -98,27 +103,42 @@ body, html {
     width: 100%; /* Full width on mobile */
     max-width: 300px; /* Adjusted for mobile */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
-.dashboard-cards .dashboard-card img {
+.dashboard-card img {
     width: 100%;
     height: 200px;
     object-fit: cover;
     border-radius: 4px;
 }
 
-.dashboard-error {
-    color: red;
+.dashboard-card h2 {
+    margin-top: 10px;
 }
 
-.dashboard-buttons {
-    background-color: #234a7c; /* Match button background color */
-    color: #ffffff; /* Match button text color */
+.dashboard-card p {
+    margin: 5px 0;
+}
+
+.delete-button, .favorite-button {
+    background-color: #234a7c;
+    color: #ffffff;
     border: none;
     border-radius: 5px;
-    cursor: pointer;
     padding: 10px;
-    font-size: 16px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+.delete-button:hover, .favorite-button:hover {
+    background-color: #1d1d1d;
+}
+
+.dashboard-error {
+    color: red;
 }
 
 @media (min-width: 768px) {

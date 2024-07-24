@@ -7,6 +7,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import './home.css';
+import Sidebar from '../sidebar/Sidebar.jsx';
 
 function Home() {
     const [user, setUser] = useState(null);
@@ -20,7 +21,7 @@ function Home() {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [notifications, setNotifications] = useState([]);
-    const [unreadCount, setUnreadCount] = useState(parseInt(localStorage.getItem('unreadCount')) || 0); // Initialize from local storage
+    const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const ITEMS_PER_PAGE = 3;
@@ -44,48 +45,79 @@ function Home() {
                 }
                 const userData = await response.json();
                 setUser(userData);
+
+                const unreadCountResponse = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications/unread-count`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                const { unreadCount } = await unreadCountResponse.json();
+                setUnreadCount(unreadCount);
             } catch (error) {
                 console.error(error);
             }
         };
         fetchUserInfo();
 
-        const socket = io('http://localhost:4500', {
-            withCredentials: true,
-        });
+        // const socket = io('http://localhost:4500', {
+        //     withCredentials: true,
+        // });
 
-        socket.on('connect', () => {
-            console.log('Connected to WebSocket server');
-        });
+        // socket.on('connect', () => {
+        //     console.log('Connected to WebSocket server');
+        // });
 
-        socket.on('notification', (notification) => {
-            console.log('Received notification:', notification);
-            if (notification.userId === user?.id || notification.serviceCreatorId === user?.id) {
-                setNotifications((prevNotifications) => [...prevNotifications, notification]);
-                setUnreadCount((prevCount) => {
-                    const newCount = prevCount + 1;
-                    localStorage.setItem('unreadCount', newCount);
-                    return newCount;
-                });
-            }
-        });
+        // socket.on('notification', (notification) => {
+        //     console.log('Received notification:', notification);
+        //     if (notification.userId === user?.id || notification.serviceCreatorId === user?.id) {
+        //         setNotifications((prevNotifications) => [...prevNotifications, notification]);
+        //         setUnreadCount((prevCount) => {
+        //             const newCount = prevCount + 1;
+        //             // updateUnreadCountInDB(newCount); // Update the unread count in the database
+        //             return newCount;
+        //         });
+        //         console.log(notification.userId);
+        //         console.log(notification.serviceCreatorId);
+        //     }
+        // });
 
-        socket.on('disconnect', (reason) => {
-            console.log('WebSocket connection closed:', reason);
-        });
+        // socket.on('disconnect', (reason) => {
+        //     console.log('WebSocket connection closed:', reason);
+        // });
 
-        socket.on('connect_error', (error) => {
-            console.error('WebSocket connection error:', error);
-        });
+        // socket.on('connect_error', (error) => {
+        //     console.error('WebSocket connection error:', error);
+        // });
 
-        socket.on('error', (error) => {
-            console.error('WebSocket error:', error);
-        });
+        // socket.on('error', (error) => {
+        //     console.error('WebSocket error:', error);
+        // });
 
-        return () => {
-            socket.disconnect();
-        };
-    }, []);
+        // return () => {
+        //     socket.disconnect();
+        // };
+    }, [navigate, user?.id]);
+
+    // const updateUnreadCountInDB = async (count) => {
+    //     try {
+    //         const token = localStorage.getItem('token');
+    //         if (!token) {
+    //             navigate('/login');
+    //             return;
+    //         }
+    //         // await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications/update-unread-count`, {
+    //         //     method: 'POST',
+    //         //     headers: {
+    //         //         'Authorization': `Bearer ${token}`,
+    //         //         'Content-Type': 'application/json',
+    //         //     },
+    //         //     body: JSON.stringify({ unreadCount: count }),
+    //         // });
+    //     } catch (error) {
+    //         console.error('Failed to update unread count in database:', error);
+    //     }
+    // };
 
     useEffect(() => {
         fetchServices();
@@ -281,13 +313,18 @@ function Home() {
 
     const handleNotificationClick = async () => {
         setUnreadCount(0);
-        localStorage.setItem('unreadCount', 0); // Reset unread count in local storage
         try {
             const token = localStorage.getItem('token');
             if (!token) {
                 navigate('/login');
                 return;
             }
+            await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications/reset-unread-count`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
             const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications`, {
                 method: 'GET',
                 headers: {
@@ -312,25 +349,7 @@ function Home() {
 
     return (
         <div className="home">
-            <div className="home-sidebar">
-                <div className="home-profile">
-                    <div className="profile-pic">
-                        <img src={`data:image/png;base64,${profile.logo}`} alt="Profile Logo" />
-                    </div>
-                    <h3>{profile.businessName}</h3>
-                    <button className="home-buttons" onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
-                </div>
-                <div className="home-menu">
-                    <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
-                    <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
-                    <a href="#" className="active">Home</a>
-                    <a href="#" onClick={() => navigate('/bookings')}>Bookings</a>
-                    <a href="#" onClick={handleNotificationClick}>
-                        Notifications {unreadCount > 0 && <span className="notification-count">{unreadCount}</span>}
-                    </a>
-                </div>
-                <button className="logout-button" onClick={handleLogout}>Log Out</button>
-            </div>
+            <Sidebar />
             <div className="home-main-content">
                 <div className="home-header">
                     <h1>Recommended Services</h1>

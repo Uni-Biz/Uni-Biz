@@ -21,6 +21,7 @@ model User {
   favorites       Favorite[]
   bookings        Booking[]
   notifications Notification[]  // Relation to Notification
+  unreadCount Int     @default(0)
 }
 
 model BusinessProfile {
