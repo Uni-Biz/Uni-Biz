@@ -7,22 +7,25 @@ body {
     align-items: center;
     height: 100vh;
     background-color: #f0f0f0;
+    overflow: hidden; /* Prevent body overflow */
 }
 
 .login-signup-container {
     display: flex;
     width: 80%;
     max-width: 1200px;
-    height: auto;
+    max-height: 90vh; /* Limit the container height */
     background-color: #ffffff;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     flex-wrap: wrap;
     margin: 20px;
     box-sizing: border-box;
+    overflow: hidden; /* Ensure container doesn't overflow */
 }
 
 .login-left-panel, .login-right-panel {
     padding: 20px;
+    overflow-y: auto; /* Enable vertical scrolling for panels */
 }
 
 .login-left-panel {
@@ -43,6 +46,8 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    box-sizing: border-box;
+    overflow-y: auto; /* Enable vertical scrolling for the right panel */
 }
 
 h1 {
@@ -89,6 +94,7 @@ h1 {
 form {
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 form input {
@@ -101,17 +107,13 @@ form input {
 
 .name-fields {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px; /* Add some gap between fields */
 }
 
 .name-field {
     flex: 1;
-    margin-right: 0px;
-    width: 300px;
-}
-
-.name-field:last-child {
-    margin-left:10px;
+    min-width: 45%; /* Ensure fields take appropriate width */
 }
 
 form button {
@@ -124,27 +126,40 @@ form button {
     cursor: pointer;
 }
 
-.wand{
-    margin-right: 30px;
-    margin-top: 20px;
-}
-
-.plant{
-    margin-right: 30px;
-    margin-top: 20px;
-}
-
-.star{
-    margin-right: 30px;
+.wand, .plant, .star, .chain {
+    margin-right: 10px;
     margin-top: 5px;
-}
-
-.chain{
-    margin-right: 30px;
-    margin-top: 20px;
 }
 
 .error {
     color: red;
     margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    body {
+        overflow: auto; /* Enable body scrolling on small screens */
+    }
+
+    .login-signup-container {
+        width: 100%;
+        height: 100vh; /* Use full viewport height */
+        max-height: none; /* Remove height limit */
+        margin: 0;
+        overflow-y: auto; /* Enable vertical scrolling for container */
+    }
+
+    .login-left-panel, .login-right-panel {
+        padding: 20px;
+        flex: 1 1 100%; /* Ensure panels take full width on small screens */
+    }
+
+    .name-fields {
+        flex-direction: column;
+        gap: 0; /* Remove gap for better alignment */
+    }
+
+    .name-field {
+        width: 100%; /* Ensure fields take full width on small screens */
+    }
 }

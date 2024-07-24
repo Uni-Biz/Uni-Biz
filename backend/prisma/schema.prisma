@@ -20,6 +20,8 @@ model User {
   services        Service[]
   favorites       Favorite[]
   bookings        Booking[]
+  notifications Notification[]  // Relation to Notification
+  unreadCount Int     @default(0)
 }
 
 model BusinessProfile {
@@ -44,6 +46,7 @@ model Service {
   favoritedBy       Favorite[]
   availableTimes    AvailableTime[]
   bookings          Booking[]
+  notifications Notification[]  // Relation to Notification
 }
 
 model ReviewAndRating {
@@ -85,4 +88,15 @@ model Booking {
   service    Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   time       AvailableTime? @relation(fields: [timeId], references: [id], onDelete: Cascade)
   createdAt  DateTime     @default(now())
+}
+
+model Notification {
+  id          Int       @id @default(autoincrement())
+  content     String
+  timestamp   DateTime  @default(now())
+  read        Boolean   @default(false)
+  userId      Int?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId   Int?
+  service     Service?  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }

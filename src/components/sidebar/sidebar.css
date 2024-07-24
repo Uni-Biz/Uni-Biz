@@ -1,0 +1,80 @@
+.sidebar {
+    width: 250px;
+    background-color: #234a7c;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    overflow-y: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.open {
+    transform: translateX(0);
+}
+
+.hamburger-button {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: #234a7c;
+    color: #ffffff;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1000; /* Ensure the button is above other content */
+}
+
+.home-profile {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile-pic img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+
+.home-menu a {
+    display: block;
+    padding: 10px 20px;
+    color: #ffffff;
+    text-decoration: none;
+    transition: background 0.3s;
+}
+
+.home-menu a:hover {
+    background-color: #1d1d1d;
+}
+
+.logout-button {
+    background-color: #e74c3c;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 250px;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .hamburger-button {
+        display: block;
+    }
+}
