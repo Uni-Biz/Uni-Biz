@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -13,7 +13,85 @@ const AddServiceForm = ({ onClose }) => {
     const [image, setImage] = useState(null);
     const [availableTimes, setAvailableTimes] = useState([]);
     const [error, setError] = useState('');
+    const [googleCalEvents, setGoogleCalEvents] = useState([]);
+    const [bookings, setBookings] = useState([]);
+    const [offeredBookings, setOfferedBookings] = useState([]);
     const serviceTypes = ['Hair', 'Clothes', 'Food', 'Cosmetic']; // Replace with actual service types
+
+    useEffect(() => {
+        fetchGoogleCal();
+        fetchBookings();
+        fetchOfferedBookings();
+    }, []);
+
+    const fetchGoogleCal = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/google-calendar/events`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch Google Calendar events');
+            }
+            const googleData = await response.json();
+            setGoogleCalEvents(googleData);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const fetchBookings = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/bookings`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch bookings');
+            }
+            const bookingsData = await response.json();
+            setBookings(bookingsData);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const fetchOfferedBookings = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/offered-bookings`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch offered bookings');
+            }
+            const offeredBookingsData = await response.json();
+            setOfferedBookings(offeredBookingsData);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const handleDateSelect = (selectInfo) => {
         let calendarApi = selectInfo.view.calendar;
@@ -109,10 +187,34 @@ const AddServiceForm = ({ onClose }) => {
                     selectMirror={true}
                     select={handleDateSelect}
                     eventClick={handleEventClick}
-                    events={availableTimes.map(time => ({
-                        start: time.startTime,
-                        end: time.endTime
-                    }))}
+                    events={[
+                        ...googleCalEvents.map(googleEvent => ({
+                            start: googleEvent.startAt,
+                            end: googleEvent.endAt,
+                            title: googleEvent.title,
+                            id: googleEvent.id,
+                            backgroundColor: 'green', // Color for logged in user's Google Calendar events
+                        })),
+                        ...bookings.map(booking => ({
+                            start: booking.time.startTime,
+                            end: booking.time.endTime,
+                            title: booking.service.serviceName,
+                            id: booking.id,
+                            backgroundColor: 'blue', // Color for services booked by the user
+                        })),
+                        ...offeredBookings.map(booking => ({
+                            start: booking.time.startTime,
+                            end: booking.time.endTime,
+                            title: `${booking.service.serviceName} (Offered)`,
+                            id: booking.id,
+                            backgroundColor: 'orange', // Color for services offered by the user and booked by others
+                        })),
+                        ...availableTimes.map(time => ({
+                            start: time.startTime,
+                            end: time.endTime,
+                            backgroundColor: 'gray', // Color for new available times
+                        }))
+                    ]}
                 />
             </div>
             {error && <p className="error">{error}</p>}
