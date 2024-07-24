@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:5173', // Your frontend URL
+        origin: 'http://localhost:5173', 
         methods: ["GET", "POST"],
         allowedHeaders: ["Authorization", "Content-Type"],
         credentials: true
@@ -34,5 +34,5 @@ module.exports = { sendNotification };
 
 const wsPort = process.env.WEB_SOCKET_PORT || 4500;
 server.listen(wsPort, () => {
-    
+
 });
