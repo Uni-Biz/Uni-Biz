@@ -126,6 +126,37 @@ const Bookings = () => {
         }
     };
 
+    const cancelBooking = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+
+            const userId = JSON.parse(atob(token.split('.')[1])).id; // Decode user ID from JWT token
+            const bookingUrl = selectedBooking.service.userId === userId ?
+                `${import.meta.env.VITE_BACKEND_ADDRESS}/api/offered-bookings/${selectedBooking.id}` :
+                `${import.meta.env.VITE_BACKEND_ADDRESS}/api/bookings/${selectedBooking.id}`;
+
+            const response = await fetch(bookingUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to cancel booking');
+            }
+            setShowBookingModal(false);
+            fetchBookings(); // Refresh bookings after cancellation
+            fetchOfferedBookings(); // Refresh offered bookings after cancellation
+        } catch (error) {
+            console.error(error);
+            alert('Failed to cancel booking');
+        }
+    };
+
     return (
         <div className="bookings">
             <Sidebar />
@@ -169,6 +200,7 @@ const Bookings = () => {
                         <p>Service Type: {selectedBooking.service.serviceType}</p>
                         <p>Price: ${selectedBooking.service.price}</p>
                         <p>Time: {new Date(selectedBooking.time.startTime).toLocaleString()} - {new Date(selectedBooking.time.endTime).toLocaleString()}</p>
+                        <button onClick={cancelBooking}>Cancel Booking</button>
                     </div>
                 </Modal>
             )}

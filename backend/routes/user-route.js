@@ -177,8 +177,10 @@ router.delete('/delete-profile', authenticateJWT, async (req, res) => {
                 profileComplete: false
             }
         });
-
         res.json({ message: 'Profile deleted successfully' });
+
+
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error deleting profile' });
@@ -649,6 +651,9 @@ router.get('/bookings', authenticateJWT, async (req, res) => {
                 time: true,
             },
         });
+
+
+
         res.status(200).json(bookings);
     } catch (error) {
         console.error(error);
@@ -680,6 +685,205 @@ router.get('/offered-bookings', authenticateJWT, async (req, res) => {
         res.status(500).json({ error: 'Error fetching offered bookings' });
     }
 });
+
+router.delete('/offered-bookings/:id', authenticateJWT, async (req, res) => {
+    const bookingId = parseInt(req.params.id);
+
+    try {
+        // Find the booking
+        const booking = await prisma.booking.findUnique({
+            where: { id: bookingId },
+            include: {
+                time: true,
+                service: {
+                    include: {
+                        user: true // Include the user who offers the service
+                    }
+                },
+                user: true // Include the user who made the booking
+            }
+        });
+
+        if (!booking) {
+            return res.status(404).json({ error: 'Booking not found' });
+        }
+
+        // Ensure the authenticated user is the service provider
+        if (booking.service.userId !== req.user.id) {
+            return res.status(403).json({ error: 'You are not authorized to cancel this booking' });
+        }
+
+        // Delete the booking
+        await prisma.booking.delete({
+            where: { id: bookingId }
+        });
+
+        // Update the time slot to mark it as not booked
+        await prisma.availableTime.update({
+            where: { id: booking.timeId },
+            data: { isBooked: false }
+        });
+
+        const notificationContentForUser = `Your booking of ${booking.service.serviceName} with ${booking.service.user.username} has been canceled for ${new Date(booking.time.startTime).toLocaleString()}`;
+        const notificationContentForServiceProvider = `You canceled ${booking.user.username}'s booking of ${booking.service.serviceName} for ${new Date(booking.time.startTime).toLocaleString()}`;
+
+        // Create notification for the user who made the booking
+        await prisma.notification.create({
+            data: {
+                content: notificationContentForUser,
+                userId: booking.user.id,
+                serviceId: booking.service.id
+            }
+        });
+
+        // Increment unread count for the user who made the booking
+        await prisma.user.update({
+            where: { id: booking.user.id },
+            data: {
+                unreadCount: {
+                    increment: 1
+                }
+            }
+        });
+
+        // Create notification for the service provider
+        await prisma.notification.create({
+            data: {
+                content: notificationContentForServiceProvider,
+                userId: booking.service.user.id,
+                serviceId: booking.service.id
+            }
+        });
+
+        // Increment unread count for the service provider
+        await prisma.user.update({
+            where: { id: booking.service.user.id },
+            data: {
+                unreadCount: {
+                    increment: 1
+                }
+            }
+        });
+
+        const cancellationDetails = {
+            userId: booking.user.id,
+            serviceId: booking.service.id,
+            timeId: booking.time.id,
+            userName: booking.user.username,
+            serviceName: booking.service.serviceName,
+            businessName: booking.service.user.username,
+            cancellationTime: new Date().toISOString(),
+            serviceCreatorId: booking.service.userId
+        };
+
+        sendNotification(cancellationDetails);
+
+        res.status(200).json({ message: 'Booking canceled successfully' });
+    } catch (error) {
+        console.error('Error canceling booking:', error);
+        res.status(500).json({ error: 'Failed to cancel booking' });
+    }
+});
+
+router.delete('/bookings/:id', authenticateJWT, async (req, res) => {
+    const bookingId = parseInt(req.params.id);
+
+    try {
+        // Find the booking
+        const booking = await prisma.booking.findUnique({
+            where: { id: bookingId },
+            include: {
+                time: true,
+                service: {
+                    include: {
+                        user: true // Include the user who offers the service
+                    }
+                },
+                user: true // Include the user who made the booking
+            }
+        });
+
+        if (!booking) {
+            return res.status(404).json({ error: 'Booking not found' });
+        }
+
+        // Ensure the booking belongs to the authenticated user or the service provider is the authenticated user
+        if (booking.userId !== req.user.id && booking.service.userId !== req.user.id) {
+            return res.status(403).json({ error: 'You are not authorized to cancel this booking' });
+        }
+
+        // Delete the booking
+        await prisma.booking.delete({
+            where: { id: bookingId }
+        });
+
+        // Update the time slot to mark it as not booked
+        await prisma.availableTime.update({
+            where: { id: booking.timeId },
+            data: { isBooked: false }
+        });
+
+        const notificationContentForUser = `You canceled your booking of ${booking.service.serviceName} with ${booking.service.user.username} for ${new Date(booking.time.startTime).toLocaleString()}`;
+        const notificationContentForServiceProvider = `${req.user.username} canceled their booking of ${booking.service.serviceName} with you for ${new Date(booking.time.startTime).toLocaleString()}`;
+
+        // Create notification for the user who canceled the booking
+        await prisma.notification.create({
+            data: {
+                content: notificationContentForUser,
+                userId: booking.user.id,
+                serviceId: booking.service.id
+            }
+        });
+
+        // Increment unread count for the user who canceled the booking
+        await prisma.user.update({
+            where: { id: booking.user.id },
+            data: {
+                unreadCount: {
+                    increment: 1
+                }
+            }
+        });
+
+        // Create notification for the service provider
+        await prisma.notification.create({
+            data: {
+                content: notificationContentForServiceProvider,
+                userId: booking.service.user.id,
+                serviceId: booking.service.id
+            }
+        });
+
+        // Increment unread count for the service provider
+        await prisma.user.update({
+            where: { id: booking.service.user.id },
+            data: {
+                unreadCount: {
+                    increment: 1
+                }
+            }
+        });
+
+        const cancellationDetails = {
+            userId: req.user.id,
+            serviceId: booking.service.id,
+            timeId: booking.time.id,
+            userName: req.user.username,
+            serviceName: booking.service.serviceName,
+            businessName: booking.service.user.username,
+            cancellationTime: new Date().toISOString(),
+            serviceCreatorId: booking.service.userId
+        };
+
+        sendNotification(cancellationDetails);
+
+        res.status(200).json({ message: 'Booking canceled successfully' });
+    } catch (error) {
+        console.error('Error canceling booking:', error);
+        res.status(500).json({ error: 'Failed to cancel booking' });
+    }
+});
+
 
 router.post('/create-notification', authenticateJWT, async (req, res) => {
     const { content, userId } = req.body;
