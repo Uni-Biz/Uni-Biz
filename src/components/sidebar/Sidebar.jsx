@@ -6,8 +6,9 @@ import './sidebar.css';
 const Sidebar = () => {
     const [user, setUser] = useState(null);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to manage sidebar visibility
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const navigate = useNavigate();
+    const dragStartX = useRef(null);
     const socketRef = useRef(null);
 
     useEffect(() => {
@@ -50,18 +51,15 @@ const Sidebar = () => {
                     });
 
                     socket.on('connect', () => {
-
                     });
 
                     socket.on('notification', (notification) => {
-
                         if (notification.userId === userData.id || notification.serviceCreatorId === userData.id) {
                             setUnreadCount((prevCount) => prevCount + 1);
                         }
                     });
 
                     socket.on('disconnect', (reason) => {
-                        
                     });
 
                     socket.on('connect_error', (error) => {
@@ -88,6 +86,68 @@ const Sidebar = () => {
             }
         };
     }, [navigate]);
+
+    useEffect(() => {
+        const handleTouchStart = (e) => {
+            dragStartX.current = e.touches[0].clientX;
+        };
+
+        const handleTouchMove = (e) => {
+            if (dragStartX.current !== null) {
+                const dragEndX = e.touches[0].clientX;
+                if (dragEndX - dragStartX.current > 100) {
+                    setIsSidebarOpen(true);
+                } else if (dragStartX.current - dragEndX > 100) {
+                    setIsSidebarOpen(false);
+                }
+            }
+        };
+
+        const handleTouchEnd = () => {
+            dragStartX.current = null;
+        };
+
+        document.addEventListener('touchstart', handleTouchStart);
+        document.addEventListener('touchmove', handleTouchMove);
+        document.addEventListener('touchend', handleTouchEnd);
+
+        return () => {
+            document.removeEventListener('touchstart', handleTouchStart);
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleMouseDown = (e) => {
+            dragStartX.current = e.clientX;
+        };
+
+        const handleMouseMove = (e) => {
+            if (dragStartX.current !== null) {
+                const dragEndX = e.clientX;
+                if (dragEndX - dragStartX.current > 100) {
+                    setIsSidebarOpen(true);
+                } else if (dragStartX.current - dragEndX > 100) {
+                    setIsSidebarOpen(false);
+                }
+            }
+        };
+
+        const handleMouseUp = () => {
+            dragStartX.current = null;
+        };
+
+        document.addEventListener('mousedown', handleMouseDown);
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            document.removeEventListener('mousedown', handleMouseDown);
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -116,12 +176,8 @@ const Sidebar = () => {
         }
     };
 
-    const toggleSidebar = () => {
-        setIsSidebarOpen(!isSidebarOpen); // Toggle sidebar visibility
-    };
-
     return (
-        <div>
+        <div className="main-container">
             <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 {user && (
                     <div className="home-profile">
@@ -142,9 +198,9 @@ const Sidebar = () => {
                 </div>
                 <button className="logout-button" onClick={handleLogout}>Log Out</button>
             </div>
-            <button className="hamburger-button" onClick={toggleSidebar}>
-                ☰
-            </button>
+            <div className={`content ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+                {/* Main content goes here */}
+            </div>
         </div>
     );
 };

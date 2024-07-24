@@ -7,6 +7,7 @@ import Favorites from './components/favorites/favorites';
 import Home from './components/home/home';
 import Bookings from './components/booking/bookings';
 import Notifications from './components/notifications/notifications'
+import GoogleOAuthCallback from './components/GoogleOAuthCallback/GoogleOAuthCallback';
 import './App.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/favorites" element={<Favorites />} />
                 <Route path="/home" element={<Home />} />
+                <Route path='/google-cal/callback' element={<GoogleOAuthCallback />} />
                 <Route path="*" element={<Link to="/login" />} />
                 <Route path="/bookings" element={<Bookings />} />
                 <Route path="/notifications" element={<Notifications />} />
