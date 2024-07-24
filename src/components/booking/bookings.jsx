@@ -11,6 +11,7 @@ import Sidebar from '../sidebar/Sidebar.jsx';
 const Bookings = () => {
     const [bookings, setBookings] = useState([]);
     const [offeredBookings, setOfferedBookings] = useState([]);
+    const [googleCalEvents, setGoogleCalEvents] = useState([]);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [showBookingModal, setShowBookingModal] = useState(false);
     const navigate = useNavigate();
@@ -18,7 +19,31 @@ const Bookings = () => {
     useEffect(() => {
         fetchBookings();
         fetchOfferedBookings();
+        fetchGoogleCal();
     }, []);
+
+    const fetchGoogleCal = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/google-calendar/events`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch Google Calendar events');
+            }
+            const googleData = await response.json();
+            setGoogleCalEvents(googleData);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     const fetchBookings = async () => {
         try {
@@ -111,6 +136,13 @@ const Bookings = () => {
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                     initialView="timeGridWeek"
                     events={[
+                        ...googleCalEvents.map(googleEvent => ({
+                            start: googleEvent.startAt,
+                            end: googleEvent.endAt,
+                            title: googleEvent.title,
+                            id: googleEvent.id,
+                            backgroundColor: 'green', // Color for logged in user's Google Calendar events
+                        })),
                         ...bookings.map(booking => ({
                             start: booking.time.startTime,
                             end: booking.time.endTime,

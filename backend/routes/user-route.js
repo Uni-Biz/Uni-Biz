@@ -779,6 +779,19 @@ router.get('/google-calendar', (req, res) => {
     res.redirect(url);
 });
 
+router.get('/google-calendar/events', authenticateJWT, async (req, res) => {
+    try {
+        const events = await prisma.googleCalendar.findMany({
+            where: { userId: req.user.id },
+            orderBy: { startAt: 'asc' }, // Optional: Order events by start time
+        });
+        res.status(200).json(events);
+    } catch (error) {
+        console.error('Error fetching Google Calendar events:', error);
+        res.status(500).json({ error: 'Failed to fetch Google Calendar events' });
+    }
+});
+
 // API Endpoint for Callback to Exchange Authorization code for Access Token
 router.post('/google-calendar/callback', authenticateJWT, async (req, res) => {
     const { code } = req.body; // Get code from the body instead of query
