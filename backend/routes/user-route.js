@@ -761,41 +761,7 @@ router.post('/notifications/update-unread-count', authenticateJWT, async (req, r
 
 
 
-// router.delete('/notifications/:id', authenticateJWT, async (req, res) => {
-//     const { id } = req.params;
-//     const userId = req.user.id;
 
-//     console.log(`Received DELETE request for notification ID: ${id} by user ID: ${userId}`);
-
-//     try {
-//         const notification = await prisma.notification.findUnique({
-//             where: { id: parseInt(id) }
-//         });
-
-//         console.log(`Fetched notification:`, notification);
-
-//         if (!notification) {
-//             console.log('Notification not found');
-//             return res.status(404).json({ error: 'Notification not found' });
-//         }
-
-//         if (notification.userId !== userId) {
-//             console.log(`User ID mismatch: notification.userId (${notification.userId}) !== userId (${userId})`);
-//             return res.status(404).json({ error: 'Notification not authorized' });
-//         }
-
-//         await prisma.notification.delete({
-//             where: { id: parseInt(id) }
-//         });
-
-//         console.log(`Notification ID: ${id} deleted successfully`);
-
-//         res.status(200).json({ message: 'Notification deleted successfully' });
-//     } catch (error) {
-//         console.error('Error deleting notification:', error);
-//         res.status(500).json({ error: 'Error deleting notification' });
-//     }
-// });
 
 
 module.exports = router;

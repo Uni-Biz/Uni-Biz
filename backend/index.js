@@ -37,14 +37,14 @@ app.use(express.json());
 
 // Socket.io setup
 io.on('connection', (socket) => {
-    console.log('New client connected');
+
 
     socket.on('message', (message) => {
-        console.log('Received:', message);
+
     });
 
     socket.on('disconnect', () => {
-        console.log('Client disconnected');
+
     });
 });
 
@@ -56,5 +56,5 @@ const sendNotification = (notification) => {
 module.exports = { sendNotification };
 
 server.listen(port, () => {
-    console.log(`Backend Server is running on http://localhost:${port}`);
+    
 });

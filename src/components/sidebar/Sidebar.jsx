@@ -50,18 +50,18 @@ const Sidebar = () => {
                     });
 
                     socket.on('connect', () => {
-                        console.log('Connected to WebSocket server');
+
                     });
 
                     socket.on('notification', (notification) => {
-                        console.log('Received notification:', notification);
+
                         if (notification.userId === userData.id || notification.serviceCreatorId === userData.id) {
                             setUnreadCount((prevCount) => prevCount + 1);
                         }
                     });
 
                     socket.on('disconnect', (reason) => {
-                        console.log('WebSocket connection closed:', reason);
+                        
                     });
 
                     socket.on('connect_error', (error) => {

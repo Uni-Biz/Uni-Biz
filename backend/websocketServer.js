@@ -15,14 +15,14 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
-    console.log('New client connected');
+
 
     socket.on('message', (message) => {
-        console.log('Received:', message);
+
     });
 
     socket.on('disconnect', () => {
-        console.log('Client disconnected');
+
     });
 });
 
@@ -34,5 +34,5 @@ module.exports = { sendNotification };
 
 const wsPort = process.env.WEB_SOCKET_PORT || 4500;
 server.listen(wsPort, () => {
-    console.log(`WebSocket Server is running on port ${wsPort}`);
+    
 });

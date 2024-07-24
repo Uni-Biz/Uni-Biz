@@ -44,43 +44,7 @@ function Favorites() {
         };
         fetchUserInfo();
 
-        // const socket = io('http://localhost:4500', {
-        //     withCredentials: true,
-        // });
 
-        // socket.on('connect', () => {
-        //     console.log('Connected to WebSocket server');
-        // });
-
-        // socket.on('notification', (notification) => {
-        //     console.log('Received notification:', notification);
-        //     if (notification.userId === user?.id || notification.serviceCreatorId === user?.id) {
-        //         setNotifications((prevNotifications) => [...prevNotifications, notification]);
-        //         setUnreadCount((prevCount) => {
-        //             const newCount = prevCount + 1;
-        //             localStorage.setItem(`unreadCount_${user?.id}`, newCount);
-        //             return newCount;
-        //         });
-        //         console.log(notification.userId)
-        //         console.log(notification.serviceCreatorId)
-        //     }
-        // });
-
-        // socket.on('disconnect', (reason) => {
-        //     console.log('WebSocket connection closed:', reason);
-        // });
-
-        // socket.on('connect_error', (error) => {
-        //     console.error('WebSocket connection error:', error);
-        // });
-
-        // socket.on('error', (error) => {
-        //     console.error('WebSocket error:', error);
-        // });
-
-        // return () => {
-        //     socket.disconnect();
-        // };
 
     }, [navigate]);
 

@@ -60,64 +60,10 @@ function Home() {
         };
         fetchUserInfo();
 
-        // const socket = io('http://localhost:4500', {
-        //     withCredentials: true,
-        // });
 
-        // socket.on('connect', () => {
-        //     console.log('Connected to WebSocket server');
-        // });
-
-        // socket.on('notification', (notification) => {
-        //     console.log('Received notification:', notification);
-        //     if (notification.userId === user?.id || notification.serviceCreatorId === user?.id) {
-        //         setNotifications((prevNotifications) => [...prevNotifications, notification]);
-        //         setUnreadCount((prevCount) => {
-        //             const newCount = prevCount + 1;
-        //             // updateUnreadCountInDB(newCount); // Update the unread count in the database
-        //             return newCount;
-        //         });
-        //         console.log(notification.userId);
-        //         console.log(notification.serviceCreatorId);
-        //     }
-        // });
-
-        // socket.on('disconnect', (reason) => {
-        //     console.log('WebSocket connection closed:', reason);
-        // });
-
-        // socket.on('connect_error', (error) => {
-        //     console.error('WebSocket connection error:', error);
-        // });
-
-        // socket.on('error', (error) => {
-        //     console.error('WebSocket error:', error);
-        // });
-
-        // return () => {
-        //     socket.disconnect();
-        // };
     }, [navigate, user?.id]);
 
-    // const updateUnreadCountInDB = async (count) => {
-    //     try {
-    //         const token = localStorage.getItem('token');
-    //         if (!token) {
-    //             navigate('/login');
-    //             return;
-    //         }
-    //         // await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/notifications/update-unread-count`, {
-    //         //     method: 'POST',
-    //         //     headers: {
-    //         //         'Authorization': `Bearer ${token}`,
-    //         //         'Content-Type': 'application/json',
-    //         //     },
-    //         //     body: JSON.stringify({ unreadCount: count }),
-    //         // });
-    //     } catch (error) {
-    //         console.error('Failed to update unread count in database:', error);
-    //     }
-    // };
+  
 
     useEffect(() => {
         fetchServices();
