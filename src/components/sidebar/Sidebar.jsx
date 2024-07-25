@@ -181,21 +181,64 @@ const Sidebar = () => {
         <div className="main-container">
             <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 {user && (
-                    <div className="home-profile">
-                        <div className="profile-pic">
+                   <div className="home-profile">
+                        <span className="profile-pic">
                             <img src={`data:image/png;base64,${user.profile.logo}`} alt="Profile Logo" />
-                        </div>
-                        <h3>{user.profile.businessName}</h3>
-                    </div>
+                        </span>
+                        <span className="profile-name">
+                            <h3>{user.profile.businessName}</h3>
+                        </span>
+                   </div>
                 )}
+                 <hr className="white-line" />
                 <div className="home-menu">
-                    <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
-                    <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
-                    <a href="#" onClick={() => navigate('/home')}>Home</a>
-                    <a href="#" onClick={() => navigate('/bookings')}>Bookings</a>
-                    <a href="#" onClick={handleNotificationsClick}>
-                        Notifications {unreadCount > 0 && <span className="notification-count">{unreadCount}</span>}
-                    </a>
+                    <div className="link">
+                        <span className="dash">
+                            <i className="fa-solid fa-table-columns"></i>
+                        </span>
+                        <span>
+                            <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
+                        </span>
+                    </div>
+
+                    <div className="link">
+                        <span className="dash">
+                            <i className="fa-solid fa-heart"></i>
+                        </span>
+                        <span>
+                        <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
+                    </span>
+                    </div>
+
+                    <div className="link">
+                        <span className="dash">
+                            <i className="fa-solid fa-house"></i>
+                        </span>
+                        <span>
+                            <a href="#" onClick={() => navigate('/home')}>Home</a>
+                        </span>
+                    </div>
+
+                    <div className="link">
+                        <span className="dash">
+                            <i className="fa-solid fa-calendar-day"></i>
+                        </span>
+                        <span>
+                            <a href="#" onClick={() => navigate('/bookings')}>Bookings</a>
+                        </span>
+                    </div>
+
+                    <div className="link">
+                        <span className="dash">
+                            <i className="fa-solid fa-bell"></i>
+                        </span>
+                        <span>
+                            <a href="#" onClick={handleNotificationsClick}>
+                                Notifications {unreadCount > 0 && <span className="notification-count">{unreadCount}</span>}
+                            </a>
+                        </span>
+                    </div>
+
                 </div>
                 <button className="logout-button" onClick={handleLogout}>Log Out</button>
             </div>

@@ -126,6 +126,30 @@ const Bookings = () => {
         }
     };
 
+    const unsyncGoogleCalendar = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_ADDRESS}/api/google-calendar/events`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to unsync Google Calendar');
+            }
+            alert('Successfully unsynced Google Calendar');
+            fetchGoogleCal(); // Refresh Google Calendar events
+        } catch (error) {
+            console.error(error);
+            alert('Failed to unsync Google Calendar');
+        }
+    };
+
     const cancelBooking = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -163,6 +187,7 @@ const Bookings = () => {
             <div className="bookings-main-content">
                 <h1>Your Bookings</h1>
                 <button onClick={syncGoogleCalendar}>Sync Google Calendar</button>
+                <button onClick={unsyncGoogleCalendar}>Unsync Google Calendar</button>
                 <FullCalendar
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                     initialView="timeGridWeek"
