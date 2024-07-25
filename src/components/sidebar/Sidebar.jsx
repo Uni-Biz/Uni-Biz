@@ -60,6 +60,7 @@ const Sidebar = () => {
                     });
 
                     socket.on('disconnect', (reason) => {
+
                     });
 
                     socket.on('connect_error', (error) => {
