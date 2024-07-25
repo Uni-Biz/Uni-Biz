@@ -23,6 +23,8 @@ function Home() {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [serviceType, setServiceType] = useState(''); // State for selected service type
+    const [searchTerm, setSearchTerm] = useState(''); // State for search term
     const navigate = useNavigate();
     const ITEMS_PER_PAGE = 3;
 
@@ -59,11 +61,7 @@ function Home() {
             }
         };
         fetchUserInfo();
-
-
     }, [navigate, user?.id]);
-
-  
 
     useEffect(() => {
         fetchServices();
@@ -287,6 +285,25 @@ function Home() {
         }
     };
 
+    const handleServiceTypeChange = (e) => {
+        setServiceType(e.target.value);
+        filterServices(e.target.value, searchTerm);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+        filterServices(serviceType, e.target.value);
+    };
+
+    const filterServices = (type, term) => {
+        const filteredServices = services.filter(service => {
+            const matchesType = type === '' || service.serviceType === type;
+            const matchesTerm = term === '' || service.serviceName.toLowerCase().includes(term.toLowerCase()) || service.description.toLowerCase().includes(term.toLowerCase());
+            return matchesType && matchesTerm;
+        });
+        setVisibleServices(filteredServices.slice(0, ITEMS_PER_PAGE));
+    };
+
     if (!user) {
         return <div className="loading-spinner"></div>;
     }
@@ -301,6 +318,25 @@ function Home() {
                     <h1>Recommended Services</h1>
                     <div className="actions">
                         <button onClick={handleLogout}>Log Out</button>
+                    </div>
+                </div>
+                <div className="filter-container">
+                    <label htmlFor="service-type-filter">Filter by Service Type: </label>
+                    <select id="service-type-filter" value={serviceType} onChange={handleServiceTypeChange}>
+                        <option value="">All</option>
+                        {[...new Set(services.map(service => service.serviceType))].map(type => (
+                            <option key={type} value={type}>{type}</option>
+                        ))}
+                    </select>
+                    <div>
+                    <label htmlFor="search-input">Search Services: </label>
+                    <input
+                        id="search-input"
+                        type="text"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        placeholder="Search by name or description"
+                    />
                     </div>
                 </div>
                 {loading ? (

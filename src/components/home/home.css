@@ -180,3 +180,24 @@ body, html {
         width: calc(33.333% - 20px);
     }
 }
+
+filter-container {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px; /* Add some space between elements */
+}
+
+.filter-container label {
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+.filter-container select,
+.filter-container input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
