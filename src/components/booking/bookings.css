@@ -14,20 +14,8 @@
     overflow-y: auto;
 }
 
-.home-profile {
-    text-align: center;
-    margin-bottom: 20px;
-}
 
-.profile-pic img {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-}
 
-.home-profile h3 {
-    margin: 10px 0 5px 0;
-}
 
 .home-menu {
     width: 100%;
