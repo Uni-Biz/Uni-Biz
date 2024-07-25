@@ -1118,4 +1118,21 @@ router.get('/google-calendar/sync', authenticateJWT, async (req, res) => {
     }
 })
 
+// Route to delete all Google Calendar events from the database
+router.delete('/google-calendar/events', authenticateJWT, async (req, res) => {
+    try {
+        const userId = req.user.id; // Ensure the user is authenticated
+
+        await prisma.googleCalendar.deleteMany({
+            where: {
+                userId: userId,
+            },
+        });
+
+        res.status(200).json({ message: 'All Google Calendar events have been deleted.' });
+    } catch (error) {
+        console.error('Error deleting Google Calendar events:', error);
+        res.status(500).json({ error: 'Failed to delete Google Calendar events' });
+    }
+});
 module.exports = router;
