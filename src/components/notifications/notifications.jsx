@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './notifications.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from '../sidebar/Sidebar.jsx';
+import './notifications.css';
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState([]);
@@ -73,13 +75,15 @@ const Notifications = () => {
                 <div>
                     {notifications.map((notification) => (
                         <div key={notification.id} className="notification-card">
-                            <p>{notification.content}</p>
-                            <p className="timestamp">{new Date(notification.timestamp).toLocaleString()}</p>
+                            <div className="notification-content">
+                                <p>{notification.content}</p>
+                                <p className="timestamp">{new Date(notification.timestamp).toLocaleString()}</p>
+                            </div>
                             <button
                                 className="delete-button"
                                 onClick={() => handleDeleteNotification(notification.id)}
                             >
-                                Delete
+                                <FontAwesomeIcon icon={faTimes} />
                             </button>
                         </div>
                     ))}

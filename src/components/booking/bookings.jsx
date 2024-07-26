@@ -186,6 +186,20 @@ const Bookings = () => {
             <Sidebar />
             <div className="bookings-main-content">
                 <h1>Your Bookings</h1>
+                <div className="legend">
+                    <div className="legend-item">
+                        <span className="legend-color" style={{ backgroundColor: 'green' }}></span>
+                        <span>Google Calendar Events</span>
+                    </div>
+                    <div className="legend-item">
+                        <span className="legend-color" style={{ backgroundColor: 'blue' }}></span>
+                        <span>Services Booked by You</span>
+                    </div>
+                    <div className="legend-item">
+                        <span className="legend-color" style={{ backgroundColor: 'orange' }}></span>
+                        <span>Services Offered by You</span>
+                    </div>
+                </div>
                 <button onClick={syncGoogleCalendar}>Sync Google Calendar</button>
                 <button onClick={unsyncGoogleCalendar}>Unsync Google Calendar</button>
                 <FullCalendar

@@ -26,7 +26,7 @@ function Home() {
     const [serviceType, setServiceType] = useState(''); // State for selected service type
     const [searchTerm, setSearchTerm] = useState(''); // State for search term
     const navigate = useNavigate();
-    const ITEMS_PER_PAGE = 3;
+    const ITEMS_PER_PAGE = 4;
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -290,6 +290,25 @@ function Home() {
         filterServices(e.target.value, searchTerm);
     };
 
+    // const renderStars = (rating) => {
+    //     const roundedRating = Math.round(rating * 2) / 2;
+    //     const fullStars = Math.floor(roundedRating);
+    //     const halfStar = roundedRating % 1 !== 0;
+    //     const emptyStars = 5 - Math.ceil(roundedRating);
+
+    //     return (
+    //         <>
+    //             {[...Array(fullStars)].map((_, index) => (
+    //                 <FontAwesomeIcon key={`full-${index}`} icon={faStar} />
+    //             ))}
+    //             {halfStar && <FontAwesomeIcon icon={faStarHalfAlt} />}
+    //             {[...Array(emptyStars)].map((_, index) => (
+    //                 <FontAwesomeIcon key={`empty-${index}`} icon={faStar} style={{ color: '#ccc' }} />
+    //             ))}
+    //         </>
+    //     );
+    // };
+
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
         filterServices(serviceType, e.target.value);
@@ -328,7 +347,7 @@ function Home() {
                             <option key={type} value={type}>{type}</option>
                         ))}
                     </select>
-                    <div>
+                    <div></div>
                     <label htmlFor="search-input">Search Services: </label>
                     <input
                         id="search-input"
@@ -337,7 +356,6 @@ function Home() {
                         onChange={handleSearchChange}
                         placeholder="Search by name or description"
                     />
-                    </div>
                 </div>
                 {loading ? (
                     <div className="loading-spinner"></div>
@@ -351,13 +369,18 @@ function Home() {
                             <div className="home-cards">
                                 {visibleServices.map(service => (
                                     <div key={service.id} className="home-card" onClick={() => handleServiceClick(service)}>
-                                        <img src={`data:image/png;base64,${service.image}`} alt="Service" />
-                                        <h2>{service.serviceName}</h2>
-                                        <p>{service.serviceType}</p>
-                                        <p>{service.businessName}</p>
-                                        <p>{service.description}</p>
-                                        <p>${service.price.toFixed(2)}</p>
-                                        <p>Average Rating: {service.averageRating || 'No ratings yet'}</p>
+                                        <div className="dashboard-card-image-container">
+                                            <img ClassName="dashboard-card-image" src={`data:image/png;base64,${service.image}`} alt="Service" />
+                                        </div>
+                                        <div className='card-text'>
+                                            <h2 className="dashboard-card-title">{service.serviceName}</h2>
+                                            <p className="dashboard-card-type">Service Type: {service.serviceType}</p>
+                                            <p className="dashboard-card-business">{service.businessName}</p>
+                                            <p className="dashboard-card-price">${service.price.toFixed(2)}</p>
+                                            <div className="dashboard-card-rating">
+                                                {(service.averageRating || 0)}
+                                            </div>
+                                        </div>
                                         {service.availableTimes && service.availableTimes.length > 0 && (
                                             <button className="home-booking-button" onClick={(e) => { e.stopPropagation(); handleOpenBookingModal(service); }}>
                                                 Book Now
