@@ -299,13 +299,15 @@ function Dashboard() {
                             <div className="dashboard-card-image-container">
                                 <img className="dashboard-card-image" src={`data:image/png;base64,${service.image}`} alt="Service" />
                             </div>
-                            <h2 className="dashboard-card-title">{service.serviceName}</h2>
-                            <p className="dashboard-card-type">{service.serviceType}</p>
-                            <p className="dashboard-card-business">{service.businessName}</p>
-                            <p className="dashboard-card-description">{service.description}</p>
-                            <p className="dashboard-card-price">${service.price.toFixed(2)}</p>
-                            <div className="dashboard-card-rating">
-                                {renderStars(service.averageRating || 0)}
+                            <div className='card-text'>
+                                <h2 className="dashboard-card-title">{service.serviceName}</h2>
+                                <p className="dashboard-card-type">Service Type: {service.serviceType}</p>
+                                <p className="dashboard-card-business">{service.businessName}</p>
+                                {/* <p className="dashboard-card-description">{service.description}</p> */}
+                                <p className="dashboard-card-price">${service.price.toFixed(2)}</p>
+                                <div className="dashboard-card-rating">
+                                    {renderStars(service.averageRating || 0)}
+                                </div>
                             </div>
                             <div className="dashboard-card-actions">
                                 <button className="dashboard-card-delete-button" onClick={(e) => { e.stopPropagation(); handleDeleteService(service.id); }}>
@@ -348,9 +350,29 @@ function Dashboard() {
                             ))}
                         </div>
                         <div className="service-details-add-comment">
-                            <textarea value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Add a comment"></textarea>
-                            <input type="number" value={newRating} onChange={e => setNewRating(parseInt(e.target.value))} placeholder="Rate (1-5)" min="1" max="5" />
-                            <button onClick={() => handleAddComment(selectedService.id)}>Submit Comment</button>
+                            <textarea
+                                className="comment-textarea"
+                                value={newComment}
+                                onChange={e => setNewComment(e.target.value)}
+                                placeholder="Add a comment"
+                            ></textarea>
+                            <div className="rating-and-submit">
+                                <input
+                                    type="number"
+                                    className="comment-rating"
+                                    value={newRating}
+                                    onChange={e => setNewRating(parseInt(e.target.value))}
+                                    placeholder="Rate (1-5)"
+                                    min="1"
+                                    max="5"
+                                />
+                                <button
+                                    className="submit-comment-button"
+                                    onClick={() => handleAddComment(selectedService.id)}
+                                >
+                                    Submit Comment
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </Modal>
