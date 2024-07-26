@@ -3,70 +3,24 @@ body, html {
     padding: 0;
     height: 100%;
     width: 100%;
-    overflow: hidden; /* Prevent scrolling on body */
+    overflow: hidden;
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0; /* Set background color */
+    background-color: #f0f0f0;
 }
 
 .dashboard-dashboard {
     display: flex;
     height: 100%;
     width: 100%;
-    background-color: #ffffff; /* Set background color */
+    background-color: #ffffff;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-}
-
-.dashboard-sidebar {
-    width: 250px;
-    background-color: #234a7c; /* Set background color to match login panel */
-    color: #ffffff; /* Set text color */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    overflow-y: auto; /* Scrollable sidebar */
-}
-
-.dashboard-sidebar .dashboard-profile {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.dashboard-sidebar .dashboard-profile img {
-    width: 250px; /* Adjusted for mobile */
-    height: 250px; /* Adjusted for mobile */
-    border-radius: 50%;
-}
-
-.dashboard-sidebar .dashboard-profile h3 {
-    margin: 10px 0 5px 0;
-}
-
-.dashboard-sidebar .dashboard-menu {
-    width: 100%;
-}
-
-.dashboard-sidebar .dashboard-menu a {
-    display: block;
-    padding: 10px 20px;
-    color: #ffffff; /* Set text color */
-    text-decoration: none;
-    transition: background 0.3s;
-}
-
-.dashboard-sidebar .dashboard-menu a:hover {
-    background-color: #1d1d1d; /* Set hover background color */
-}
-
-.dashboard-sidebar .dashboard-menu a.active {
-    background-color: #1d1d1d; /* Set active link background color */
 }
 
 .dashboard-main-content {
     flex: 1;
     padding: 20px;
-    overflow-y: auto; /* Scrollable content */
+    overflow-y: auto;
 }
 
 .dashboard-header {
@@ -85,40 +39,123 @@ body, html {
     gap: 10px;
 }
 
+.actions button {
+    background-color: #234a7c;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.actions button:hover {
+    background-color: #1d1d1d;
+}
+
 .dashboard-cards {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
-    justify-content: center; /* Center cards on mobile */
-    overflow-y: auto; /* Adds vertical scrolling if content overflows */
-    max-height: calc(100vh - 100px); /* Adjust based on the available space */
-    padding: 10px; /* Optional: Add some padding for better aesthetics */
+    justify-content: center;
+    overflow-y: auto;
+    max-height: calc(100vh - 100px);
+    padding: 10px;
 }
 
 .dashboard-card {
-    background-color: white;
-    padding: 20px;
     border: 1px solid #ddd;
+    padding: 16px;
+    margin: 16px 0;
     border-radius: 8px;
-    width: 100%; /* Full width on mobile */
-    max-width: 300px; /* Adjusted for mobile */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s;
+    width: 100%; /* Default to full width */
+    max-width: 335px; /* Ensure images don't overflow */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dashboard-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card-image-container {
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%; /* This ensures the height is the same as the width, making it a square */
     position: relative;
 }
 
-.dashboard-card img {
+.dashboard-card-image {
     width: 100%;
-    height: 200px;
-    object-fit: cover;
+    height: 100%;
+    position: absolute;
+    object-fit: cover; /* This ensures the image covers the container without stretching */
     border-radius: 4px;
 }
 
-.dashboard-card h2 {
-    margin-top: 10px;
+.dashboard-card-title {
+    font-size: 2em;
+    margin: 8px 0;
+    color: #234a7c;
 }
 
-.dashboard-card p {
-    margin: 5px 0;
+.dashboard-card-type,
+.dashboard-card-business,
+.dashboard-card-description,
+.dashboard-card-price,
+.dashboard-card-rating {
+    margin: 4px 0;
+}
+
+.dashboard-card-rating .fa-star, .dashboard-card-rating .fa-star-half-alt {
+    color: #ffd700; /* Gold color for stars */
+}
+
+.dashboard-card-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    width: 100%;
+}
+
+.dashboard-card-delete-button,
+.dashboard-card-favorite-button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.dashboard-card-delete-button {
+    color: #234a7c;
+    background: none;
+}
+
+.dashboard-card-delete-button:hover {
+    color: #e74c3c;
+}
+
+.dashboard-card-favorite-button {
+    color: #e74c3c;
+    background: none;
+    border: 2px solid #e74c3c;
+}
+
+.dashboard-card-favorite-button.clicked {
+    background-color: #e74c3c;
+    color: #fff;
+}
+
+.dashboard-card-favorite-button:hover {
+    background-color: #e74c3c;
+    color: #fff;
 }
 
 .delete-button, .favorite-button {
@@ -129,7 +166,6 @@ body, html {
     padding: 10px;
     cursor: pointer;
     font-size: 14px;
-    margin-top: 10px;
     transition: background-color 0.3s;
 }
 
@@ -137,46 +173,97 @@ body, html {
     background-color: #1d1d1d;
 }
 
-.dashboard-error {
-    color: red;
+.service-details h2 {
+    margin: 0;
 }
 
-.comments-container {
-    max-height: 150px; /* Adjust based on your needs */
-    overflow-y: auto; /* Adds vertical scroll */
+.service-details h3 {
+    margin-top: 20px;
+}
+
+.comments {
+    max-height: 150px;
+    overflow-y: auto;
     padding: 10px;
-    border-top: 1px solid #ddd; /* Optional: Add a top border for separation */
-    margin-top: 10px; /* Optional: Add some space above the comments */
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
 }
 
-.comments-container::-webkit-scrollbar {
+.comments::-webkit-scrollbar {
     width: 8px;
 }
 
-.comments-container::-webkit-scrollbar-thumb {
+.comments::-webkit-scrollbar-thumb {
     background-color: #888;
     border-radius: 4px;
 }
 
-.comments-container::-webkit-scrollbar-thumb:hover {
+.comments::-webkit-scrollbar-thumb:hover {
     background-color: #555;
+}
+
+.add-comment {
+    margin-top: 10px;
+}
+
+.add-comment textarea, .add-comment input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.add-comment button {
+    background-color: #234a7c;
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.add-comment button:hover {
+    background-color: #1d1d1d;
 }
 
 @media (min-width: 768px) {
     .dashboard-dashboard {
         flex-direction: row;
     }
-    .dashboard-sidebar {
-        width: 250px;
-    }
+
     .dashboard-main-content {
         padding: 40px;
     }
-    .dashboard-header {
-        flex-direction: row;
-        justify-content: space-between;
-    }
+
     .dashboard-card {
-        width: calc(33.333% - 20px);
+        width: 48%; /* 2 cards per row */
     }
+}
+
+@media (min-width: 1024px) {
+    .dashboard-card {
+        width: 32%; /* 3 cards per row */
+    }
+}
+
+.service-details-comments .service-details-comment p {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.comment-delete-button {
+    background: none;
+    border: none;
+    color: #234a7c;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 1em;
+    transition: color 0.3s;
+}
+
+.comment-delete-button:hover {
+    color: #e74c3c;
 }

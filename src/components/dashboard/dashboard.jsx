@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faHeart, faStar, faStarHalfAlt } from '@fortawesome/free-solid-svg-icons';
 import Modal from '../modal/modal.jsx';
 import Profile from '../user-profile/profile.jsx';
 import AddServiceForm from '../add-service-form/add-service-form.jsx';
-import './dashboard.css';
 import Sidebar from '../sidebar/Sidebar.jsx';
+import './dashboard.css';
 
 function Dashboard() {
     const [user, setUser] = useState(null);
@@ -224,7 +226,6 @@ function Dashboard() {
                 throw new Error('Failed to fetch notifications');
             }
             const notificationsData = await response.json();
-            setNotifications(notificationsData);
             navigate('/notifications', { state: { notifications: notificationsData } });
         } catch (error) {
             console.error(error);
@@ -253,40 +254,71 @@ function Dashboard() {
         fetchServices();
     };
 
+    const handleFavoriteClick = (e, serviceId) => {
+        e.stopPropagation();
+        handleAddToFavorites(serviceId);
+        e.currentTarget.classList.toggle('clicked');
+    };
+
+    const renderStars = (rating) => {
+        const roundedRating = Math.round(rating * 2) / 2;
+        const fullStars = Math.floor(roundedRating);
+        const halfStar = roundedRating % 1 !== 0;
+        const emptyStars = 5 - Math.ceil(roundedRating);
+
+        return (
+            <>
+                {[...Array(fullStars)].map((_, index) => (
+                    <FontAwesomeIcon key={`full-${index}`} icon={faStar} />
+                ))}
+                {halfStar && <FontAwesomeIcon icon={faStarHalfAlt} />}
+                {[...Array(emptyStars)].map((_, index) => (
+                    <FontAwesomeIcon key={`empty-${index}`} icon={faStar} style={{ color: '#ccc' }} />
+                ))}
+            </>
+        );
+    };
+
     if (!user) {
         return <div>Loading...</div>;
     }
 
     return (
         <div className="dashboard-dashboard">
-            <span>
-                <Sidebar />
-            </span>
-            <span>
-                <div className="dashboard-main-content">
-                    <div className="dashboard-header">
-                        <h1>Welcome, {user.first_name} {user.last_name}</h1>
-                        <div className="actions">
-                            <button onClick={handleAddService}>Add Service</button>
-                        </div>
-                    </div>
-                    <div className="dashboard-cards">
-                        {services.map(service => (
-                            <div key={service.id} className="dashboard-card" onClick={() => handleServiceClick(service)}>
-                                <img src={`data:image/png;base64,${service.image}`} alt="Service" />
-                                <h2>{service.serviceName}</h2>
-                                <p>{service.serviceType}</p>
-                                <p>{service.businessName}</p>
-                                <p>{service.description}</p>
-                                <p>${service.price.toFixed(2)}</p>
-                                <p>Average Rating: {service.averageRating || 'No ratings yet'}</p>
-                                <button className="delete-button" onClick={(e) => { e.stopPropagation(); handleDeleteService(service.id); }}>Delete</button>
-                                <button className="favorite-button" onClick={(e) => { e.stopPropagation(); handleAddToFavorites(service.id); }}>Favorite</button>
-                            </div>
-                        ))}
+            <Sidebar />
+            <div className="dashboard-main-content">
+                <div className="dashboard-header">
+                    <h1>Welcome, {user.first_name} {user.last_name}</h1>
+                    <div className="actions">
+                        <button onClick={handleAddService}>Add Service</button>
                     </div>
                 </div>
-            </span>
+                <div className="dashboard-cards">
+                    {services.map(service => (
+                        <div key={service.id} className="dashboard-card" onClick={() => handleServiceClick(service)}>
+                            <div className="dashboard-card-image-container">
+                                <img className="dashboard-card-image" src={`data:image/png;base64,${service.image}`} alt="Service" />
+                            </div>
+                            <h2 className="dashboard-card-title">{service.serviceName}</h2>
+                            <p className="dashboard-card-type">{service.serviceType}</p>
+                            <p className="dashboard-card-business">{service.businessName}</p>
+                            <p className="dashboard-card-description">{service.description}</p>
+                            <p className="dashboard-card-price">${service.price.toFixed(2)}</p>
+                            <div className="dashboard-card-rating">
+                                {renderStars(service.averageRating || 0)}
+                            </div>
+                            <div className="dashboard-card-actions">
+                                <button className="dashboard-card-delete-button" onClick={(e) => { e.stopPropagation(); handleDeleteService(service.id); }}>
+                                    <FontAwesomeIcon icon={faTrash} />
+                                </button>
+                                <button className="dashboard-card-favorite-button" onClick={(e) => handleFavoriteClick(e, service.id)}>
+                                    <FontAwesomeIcon icon={faHeart} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
             <Modal isOpen={isProfileModalOpen} onClose={handleCloseProfileModal}>
                 <Profile onClose={handleCloseProfileModal} />
             </Modal>
@@ -296,22 +328,26 @@ function Dashboard() {
             {selectedService && (
                 <Modal isOpen={true} onClose={() => setSelectedService(null)}>
                     <div className="service-details">
-                        <h2>{selectedService.serviceName}</h2>
-                        <p>{selectedService.serviceType}</p>
-                        <p>{selectedService.description}</p>
-                        <p>Average Rating: {selectedService.averageRating || 'No ratings yet'}</p>
+                        <h2 className="service-details-title">{selectedService.serviceName}</h2>
+                        <p className="service-details-type">{selectedService.serviceType}</p>
+                        <p className="service-details-description">{selectedService.description}</p>
+                        <p className="service-details-rating">Average Rating: {selectedService.averageRating || 'No ratings yet'}</p>
                         <h3>Comments</h3>
-                        <div className="comments">
+                        <div className="service-details-comments">
                             {comments.map(comment => (
-                                <div key={comment.id} className="comment">
-                                    <p><strong>{comment.user.username}</strong>: {comment.reviewText}</p>
-                                    {comment.user.id === user.id && (
-                                        <button onClick={() => handleDeleteComment(selectedService.id, comment.id)}>Delete</button>
-                                    )}
+                                <div key={comment.id} className="service-details-comment">
+                                    <p>
+                                        {comment.user.username}: {comment.reviewText}
+                                        {comment.user.id === user.id && (
+                                            <button className="comment-delete-button" onClick={() => handleDeleteComment(selectedService.id, comment.id)}>
+                                                <FontAwesomeIcon icon={faTrash} />
+                                            </button>
+                                        )}
+                                    </p>
                                 </div>
                             ))}
                         </div>
-                        <div className="add-comment">
+                        <div className="service-details-add-comment">
                             <textarea value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Add a comment"></textarea>
                             <input type="number" value={newRating} onChange={e => setNewRating(parseInt(e.target.value))} placeholder="Rate (1-5)" min="1" max="5" />
                             <button onClick={() => handleAddComment(selectedService.id)}>Submit Comment</button>

@@ -8,7 +8,6 @@ const Sidebar = () => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const navigate = useNavigate();
-    const dragStartX = useRef(null);
     const socketRef = useRef(null);
 
     useEffect(() => {
@@ -50,17 +49,10 @@ const Sidebar = () => {
                         withCredentials: true,
                     });
 
-                    socket.on('connect', () => {
-                    });
-
                     socket.on('notification', (notification) => {
                         if (notification.userId === userData.id || notification.serviceCreatorId === userData.id) {
                             setUnreadCount((prevCount) => prevCount + 1);
                         }
-                    });
-
-                    socket.on('disconnect', (reason) => {
-
                     });
 
                     socket.on('connect_error', (error) => {
@@ -87,68 +79,6 @@ const Sidebar = () => {
             }
         };
     }, [navigate]);
-
-    useEffect(() => {
-        const handleTouchStart = (e) => {
-            dragStartX.current = e.touches[0].clientX;
-        };
-
-        const handleTouchMove = (e) => {
-            if (dragStartX.current !== null) {
-                const dragEndX = e.touches[0].clientX;
-                if (dragEndX - dragStartX.current > 100) {
-                    setIsSidebarOpen(true);
-                } else if (dragStartX.current - dragEndX > 100) {
-                    setIsSidebarOpen(false);
-                }
-            }
-        };
-
-        const handleTouchEnd = () => {
-            dragStartX.current = null;
-        };
-
-        document.addEventListener('touchstart', handleTouchStart);
-        document.addEventListener('touchmove', handleTouchMove);
-        document.addEventListener('touchend', handleTouchEnd);
-
-        return () => {
-            document.removeEventListener('touchstart', handleTouchStart);
-            document.removeEventListener('touchmove', handleTouchMove);
-            document.removeEventListener('touchend', handleTouchEnd);
-        };
-    }, []);
-
-    useEffect(() => {
-        const handleMouseDown = (e) => {
-            dragStartX.current = e.clientX;
-        };
-
-        const handleMouseMove = (e) => {
-            if (dragStartX.current !== null) {
-                const dragEndX = e.clientX;
-                if (dragEndX - dragStartX.current > 100) {
-                    setIsSidebarOpen(true);
-                } else if (dragStartX.current - dragEndX > 100) {
-                    setIsSidebarOpen(false);
-                }
-            }
-        };
-
-        const handleMouseUp = () => {
-            dragStartX.current = null;
-        };
-
-        document.addEventListener('mousedown', handleMouseDown);
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-
-        return () => {
-            document.removeEventListener('mousedown', handleMouseDown);
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -177,74 +107,94 @@ const Sidebar = () => {
         }
     };
 
+    const handleCloseSidebar = () => {
+        setIsSidebarOpen(false);
+    };
+
+    const handleOpenSidebar = (e) => {
+        e.stopPropagation();
+        setIsSidebarOpen(true);
+    };
+
     return (
-        <div className="main-container">
-            <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <div className={`main-container ${isSidebarOpen ? 'sidebar-open' : ''}`} onClick={handleCloseSidebar}>
+            <div>
+             {isSidebarOpen && (
+                    <button className="toggle-sidebar-button" onClick={() => setIsSidebarOpen(false)}>
+                        ❮
+                    </button>
+                )}
+            </div>
+            <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
                 {user && (
-                   <div className="home-profile">
+                    <div className="home-profile">
                         <span className="profile-pic">
                             <img src={`data:image/png;base64,${user.profile.logo}`} alt="Profile Logo" />
                         </span>
                         <span className="profile-name">
                             <h3>{user.profile.businessName}</h3>
                         </span>
-                   </div>
+                    </div>
                 )}
-                 <hr className="white-line" />
+                <hr className="white-line" />
                 <div className="home-menu">
                     <div className="link">
                         <span className="dash">
-                            <i className="fa-solid fa-table-columns"></i>
+                            <i className="fa-solid fa-table-columns fa-2x"></i>
                         </span>
-                        <span>
+                        <span className="dashboard-link">
                             <a href="#" onClick={() => navigate('/dashboard')}>Dashboard</a>
                         </span>
                     </div>
 
                     <div className="link">
                         <span className="dash">
-                            <i className="fa-solid fa-heart"></i>
+                            <i className="fa-solid fa-heart fa-2x"></i>
                         </span>
-                        <span>
-                        <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
-                    </span>
+                        <span className="favorites">
+                            <a href="#" onClick={() => navigate('/favorites')}>Favorites</a>
+                        </span>
                     </div>
 
                     <div className="link">
                         <span className="dash">
-                            <i className="fa-solid fa-house"></i>
+                            <i className="fa-solid fa-house fa-2x"></i>
                         </span>
-                        <span>
+                        <span className="house">
                             <a href="#" onClick={() => navigate('/home')}>Home</a>
                         </span>
                     </div>
 
                     <div className="link">
                         <span className="dash">
-                            <i className="fa-solid fa-calendar-day"></i>
+                            <i className="fa-solid fa-calendar-day fa-2x"></i>
                         </span>
-                        <span>
+                        <span className="book">
                             <a href="#" onClick={() => navigate('/bookings')}>Bookings</a>
                         </span>
                     </div>
 
                     <div className="link">
                         <span className="dash">
-                            <i className="fa-solid fa-bell"></i>
+                            <i className="fa-solid fa-bell fa-2x"></i>
                         </span>
-                        <span>
+                        <span className="notif">
                             <a href="#" onClick={handleNotificationsClick}>
                                 Notifications {unreadCount > 0 && <span className="notification-count">{unreadCount}</span>}
                             </a>
                         </span>
                     </div>
-
                 </div>
                 <button className="logout-button" onClick={handleLogout}>Log Out</button>
             </div>
-            <div className={`content ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+            <div className="content">
                 {/* Main content goes here */}
             </div>
+            {!isSidebarOpen && (
+                <button className="toggle-sidebar-button-open" onClick={handleOpenSidebar}>
+                    ❯
+                </button>
+            )}
         </div>
     );
 };

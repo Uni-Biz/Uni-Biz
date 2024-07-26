@@ -1,6 +1,7 @@
 .bookings {
     display: flex;
     height: 100vh;
+    width: 100%;
 }
 
 .bookings-sidebar {
@@ -13,9 +14,6 @@
     padding: 20px;
     overflow-y: auto;
 }
-
-
-
 
 .home-menu {
     width: 100%;
@@ -55,9 +53,10 @@
 
 .bookings-main-content {
     flex-grow: 1;
-    padding: 20px;
     display: flex;
     flex-direction: column;
+    padding: 20px;
+    overflow-y: auto;
 }
 
 .booking-details {
@@ -66,4 +65,35 @@
 
 .booking-details h2 {
     margin-top: 0;
+}
+
+.legend {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    margin-left: 20px;
+    border-radius: 3px;
+}
+
+.fullcalendar-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Ensure it works well with flexbox */
+}
+
+.fullcalendar {
+    flex-grow: 1;
+    width: 100%;
 }
