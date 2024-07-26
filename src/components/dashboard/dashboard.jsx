@@ -303,7 +303,6 @@ function Dashboard() {
                                 <h2 className="dashboard-card-title">{service.serviceName}</h2>
                                 <p className="dashboard-card-type">Service Type: {service.serviceType}</p>
                                 <p className="dashboard-card-business">{service.businessName}</p>
-                                {/* <p className="dashboard-card-description">{service.description}</p> */}
                                 <p className="dashboard-card-price">${service.price.toFixed(2)}</p>
                                 <div className="dashboard-card-rating">
                                     {renderStars(service.averageRating || 0)}
